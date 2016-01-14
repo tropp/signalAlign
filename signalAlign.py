@@ -74,6 +74,7 @@ DB[18] = ('018','019', 610, 15.0, 4.25, '13Jan16', fl, 'thinned skull')
 DB[4] = ('004','002', 610, 20.0, 4.25, '13Jan16', fl, 'thinned skull')
 DB[5] =  ('005','003',610, 20.0, 4.25, '13Jan16', fl, 'thinned skull')
 
+
 homedir = os.getenv('HOME')
 videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.01.13_000/video_'
 basepath = '/Volumes/TRoppData/data/Intrinsic/2016.01.13_000/'
@@ -429,7 +430,7 @@ class testAnalysis():
         #     t = reject[i]/n_PtsPerCycle
         #     if t in trials:
         #         trials.remove(t)
-        
+
         print "retaining trials: ", trials
         D = numpy.mean(self.imageData[trials,:,:,:], axis=0).astype('float32') # /divider # get mean of the folded axes.
         print "mean calculated, now detrend and fft"
