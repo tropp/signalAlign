@@ -70,10 +70,20 @@ print 'fl:', fl
 
 # Keys are first file #. Data are file name (up, down), wavelength, attn, period, date, frequency list, comment
 DB = {11: ('011', '013', 610, 20.0, 4.25, '08Jan16', fl, 'thinned skull')}
-DB[18] = ('018','019', 610, 15.0, 4.25, '13Jan16', fl, 'thinned skull')
+DB[19] = ('019','018', 610, 15.0, 4.25, '13Jan16', fl, 'thinned skull')
 DB[4] = ('004','002', 610, 20.0, 4.25, '13Jan16', fl, 'thinned skull')
 DB[5] =  ('005','003',610, 20.0, 4.25, '13Jan16', fl, 'thinned skull')
+DB[7] = ('007', '008', 610, 120.0, 4.25, '13Jan16', fl, 'thinned skull')
+DB[12] = ('012', '011', 610, 120.0, 4.25, '13Jan16', fl, 'thinned skull') #sound unplugged
 
+# Timestamps.  Keys are first file number.  Data are videoup, audioup, videodown, audiodown start times
+timestamp = {11: (1452278712.382, 1452278713.787, 1452278790.432, 1452278791.642)}
+timestamp[19] =  (1452713884.635, 1452713885.25, 1452713843.612, 1452713844.84)
+timestamp[4] = (1452712481.09, 1452712482.456, 1452712288.048, 1452712289.394)             
+timestamp[5] = (1452712556.376, 1452712557.921, 1452712371.056, 1452712373.436)
+timestamp[7] = (1452712735.321, 1452712736.654, 1452712778.485, 1452712779.631)
+timestamp[12] = (1452713276.699, 1452713277.68, 1452713150.485, 1452713151.894)
+           
 
 homedir = os.getenv('HOME')
 videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.01.13_000/video_'
@@ -194,17 +204,22 @@ class testAnalysis():
             # indexFile = configFile.readConfigFile(basepath+'.index') 
             # print 'indexfile', indexfile
             
+            timestampup = timestamp[options.fdict][0]
+            audioupstamp = timestamp[options.fdict][1]
+            timestampdown = timestamp[options.fdict][2]
+            audiodownstamp = timestamp[options.fdict][3]
+
             #dictionary entry 11
             #timestampup = 1452278712.382
             # #audioupstamp = 1452278713.787
             # timestampdown = 1452278790.432
             # audiodownstamp = 1452278791.642
             
-            #dictionary entry 18
-            # audioupstamp = 1452713844.84
-            # timestampup = 1452713843.612
-            # audiodownstamp = 1452713885.25
-            # timestampdown = 1452713884.635
+            #dictionary entry 19
+            # audiodownstamp = 1452713844.84
+            # timestampdown = 1452713843.612
+            # audioupstamp = 1452713885.25
+            # timestampup = 1452713884.635
             
             #dictionary entry 4
             # audioupstamp = 1452712482.456
@@ -213,10 +228,23 @@ class testAnalysis():
             # timestampdown = 1452712288.048
 
             #dictionary entry 5
-            audioupstamp = 1452712557.921
-            timestampup = 1452712556.376
-            audiodownstamp = 1452712373.436
-            timestampdown = 1452712371.056
+            # audioupstamp = 1452712557.921
+            # timestampup = 1452712556.376
+            # audiodownstamp = 1452712373.436
+            # timestampdown = 1452712371.056
+
+            #dictionary entry 7
+            # audioupstamp = 1452712736.654
+            # timestampup = 1452712735.321
+            # audiodownstamp = 1452712779.631
+            # timestampdown = 1452712778.485
+
+            #dictionary entry 12
+            # audiodownstamp = 1452713151.894
+            # timestampdown = 1452713150.485
+            # audioupstamp = 1452713277.68
+            # timestampup = 1452713276.699
+
 
             diffup = audioupstamp - timestampup
             diffdown = audiodownstamp - timestampdown 
