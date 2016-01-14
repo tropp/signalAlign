@@ -70,7 +70,9 @@ print 'fl:', fl
 
 # Keys are first file #. Data are file name (up, down), wavelength, attn, period, date, frequency list, comment
 DB = {11: ('011', '013', 610, 20.0, 4.25, '08Jan16', fl, 'thinned skull')}
-DB[18] = ('018','019', 610, 15, 4.25, '13Jan16', fl, 'thinned skull')
+DB[18] = ('018','019', 610, 15.0, 4.25, '13Jan16', fl, 'thinned skull')
+DB[4] = ('004','002', 610, 20.0, 4.25, '13Jan16', fl, 'thinned skull')
+DB[5] =  ('005','003',610, 20.0, 4.25, '13Jan16', fl, 'thinned skull')
 
 homedir = os.getenv('HOME')
 videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.01.13_000/video_'
@@ -191,16 +193,30 @@ class testAnalysis():
             # indexFile = configFile.readConfigFile(basepath+'.index') 
             # print 'indexfile', indexfile
             
+            #dictionary entry 11
             #timestampup = 1452278712.382
             # #audioupstamp = 1452278713.787
             # timestampdown = 1452278790.432
             # audiodownstamp = 1452278791.642
             
-            audioupstamp = 1452713844.84
-            timestampup = 1452713843.612
-            audiodownstamp = 1452713885.25
-            timestampdown = 1452713884.635
+            #dictionary entry 18
+            # audioupstamp = 1452713844.84
+            # timestampup = 1452713843.612
+            # audiodownstamp = 1452713885.25
+            # timestampdown = 1452713884.635
             
+            #dictionary entry 4
+            # audioupstamp = 1452712482.456
+            # timestampup = 1452712481.09
+            # audiodownstamp = 1452712289.394
+            # timestampdown = 1452712288.048
+
+            #dictionary entry 5
+            audioupstamp = 1452712557.921
+            timestampup = 1452712556.376
+            audiodownstamp = 1452712373.436
+            timestampdown = 1452712371.056
+
             diffup = audioupstamp - timestampup
             diffdown = audiodownstamp - timestampdown 
 
@@ -225,10 +241,10 @@ class testAnalysis():
             adjustedtime = rawtimes[np.logical_and(rawtimes <= audiomax, rawtimes >= audiomin)]
             
             adjustedimagedata = rawimageData[np.logical_and(rawtimes <= audiomax, rawtimes >= audiomin)]
-            print 'adjtime', adjustedtime
+            # print 'adjtime', adjustedtime
             self.times = [x-np.min(adjustedtime) for x in adjustedtime]
             self.imageData = adjustedimagedata
-            print 'self.times:', self.times
+            #print 'self.times:', self.times
             print 'length of self.times', np.shape(self.times)
             print 'shape of image data', np.shape(self.imageData)
 
@@ -237,9 +253,14 @@ class testAnalysis():
                upflag = 1
             else:
                upflag = 0
+            print 'target:', target
+
             self.Analysis_FourierMap(period=measuredPeriod, target = target,  bins=binsize, up=upflag)
+        print 'target:', target
         if target > 0:
             self.plotmaps_pg(mode = 1, target = target, gfilter = gfilt)
+
+
     def Analysis_FourierMap(self, period = 4.25, target = 1, mode=0, bins = 1, up=1):
         global D
         D = []
@@ -280,7 +301,7 @@ class testAnalysis():
             ipx = 64
             ipy = 64
         print 'bins', bins
-        
+        print 'mode', mode
         if bins > 1:
             redx=bins
             redy=bins
@@ -390,6 +411,8 @@ class testAnalysis():
         print "now reshaping"
         self.n_times = numpy.arange(0, n_PtsPerCycle*ndt, ndt) # just one cycle
         # put data into new shape to prepare for mean. "Folds" data by cycles". Also multiply to make average work
+        print 'shape of slef.imageData', self.imageData.shape
+        print 'self.imageData', self.imageData
         self.imageData = numpy.reshape(self.imageData, 
                          (n_Periods, n_PtsPerCycle, sh[1], sh[2])).astype('float32')
 
@@ -397,10 +420,16 @@ class testAnalysis():
         # excluding bad trials
         trials = range(0, n_Periods)
         reject = reject[0]
-        for i in range(0,len(reject)):
-            t = reject[i]/n_PtsPerCycle
-            if t in trials:
-                trials.remove(t)
+        print 'trials', trials
+        print 'reject', reject
+        print 'nptpercycle', n_PtsPerCycle
+
+        #N.B.- Commenting this out seems to resolve issues.  Figure out why!
+        # for i in range(0,len(reject)):
+        #     t = reject[i]/n_PtsPerCycle
+        #     if t in trials:
+        #         trials.remove(t)
+        
         print "retaining trials: ", trials
         D = numpy.mean(self.imageData[trials,:,:,:], axis=0).astype('float32') # /divider # get mean of the folded axes.
         print "mean calculated, now detrend and fft"
