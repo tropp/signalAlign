@@ -284,13 +284,13 @@ class testAnalysis():
                upflag = 0
             print 'target:', target
 
-            self.Analysis_FourierMap(period=measuredPeriod, target = target,  bins=binsize, up=upflag)
+            self.Analysis_FourierMap_TFR(period=measuredPeriod, target = target,  bins=binsize, up=upflag)
         print 'target:', target
         if target > 0:
             self.plotmaps_pg(mode = 1, target = target, gfilter = gfilt)
 
 
-    def Analysis_FourierMap(self, period = 4.25, target = 1, mode=0, bins = 1, up=1):
+    def Analysis_FourierMap_TFR(self, period = 4.25, target = 1, mode=0, bins = 1, up=1):
         global D
         D = []
         self.DF = []
@@ -298,10 +298,20 @@ class testAnalysis():
         self.stdimg = []
         self.nFrames =self.imageData.shape[0]
         self.imagePeriod = 0
-        if HAVE_MPL:
-            pylab.figure(2)
+        # if HAVE_MPL:
+        #     pylab.figure(2)
         
         print "Analysis Starting"
+
+#loading background data
+        bckfile = videobasepath + '011.ma'
+        bckaudio = audiobasepath + '/DaqDevice.ma'
+        timestampup = timestamp[11][0]
+        audioupstamp = timestamp[11][1]
+        diffup = audioupstamp - timestampup
+        
+        try:
+            im = MetaArray(file = bckfile,  subset=(slice(0,2), slice(64,128), slice(64,128)))
 # first squeeze the image to 3d if it is 4d
         maxt = self.times[-1] # find last image time
         print "Duration of Image Stack: %9.3f s (%8.3f min)\n" % (maxt, maxt/60.0)
@@ -310,8 +320,8 @@ class testAnalysis():
            self.imageData = self.imageData.squeeze()
            sh = self.imageData.shape
         dt = numpy.mean(numpy.diff(self.times)) # get the mean dt
-        print 'dt', dt
-
+     
+#determine the number of periods in the timeseries of the data
         self.imagePeriod = period# image period in seconds.
         w = 2.0 * numpy.pi * self.imagePeriod
         n_Periods = int(numpy.floor(maxt/self.imagePeriod)) # how many full periods in the image set?
@@ -320,7 +330,7 @@ class testAnalysis():
         n_PtsPerCycle = int(numpy.floor(self.imagePeriod/dt)); # estimate image points in a stimulus cycle
         ndt = self.imagePeriod/n_PtsPerCycle
         print 'ndt', ndt
-
+#reduce the image stack to only the data we need
         self.imageData = self.imageData[range(0, n_Periods*n_PtsPerCycle),:,:] # reduce to only what we need
         self.timebase = numpy.arange(0, self.imageData.shape[0]*dt, dt)# reduce data in blocks by averaging
         if mode == 0:
@@ -329,8 +339,8 @@ class testAnalysis():
         else:
             ipx = 64
             ipy = 64
-        print 'bins', bins
-        print 'mode', mode
+
+#This breaks the image into pieces (fourths or sixths or whatever to speed up analysis)
         if bins > 1:
             redx=bins
             redy=bins
@@ -353,86 +363,59 @@ class testAnalysis():
             redy = bins
         print "# Periods: %d  Pts/cycle: %d Cycle dt %8.4fs (%8.3fHz) Cycle: %7.4fs" %(n_Periods, n_PtsPerCycle, ndt, 1.0/ndt, self.imagePeriod)
         
-        # get the average image and the average of the whole image over time
+# get the average image and the average of the whole image over time
         self.avgimg = numpy.mean(self.imageData, axis=0) # get mean image for reference later: average across all time
+        #print 'self.avgimg', self.avgimg
         self.stdimg = numpy.std(self.imageData, axis= 0) # and standard deviation
         # timeavg is calculated on the central region only:
-        self.timeavg = numpy.mean(numpy.mean(self.imageData[:,int(sh[1]*0.25):int(sh[1]*0.75),int(sh[2]*0.25):int(sh[2]*0.75)], axis=2),axis=1) # return average of entire image over time
+        #self.timeavg = numpy.mean(numpy.mean(self.imageData[:,int(sh[1]*0.25):int(sh[1]*0.75),int(sh[2]*0.25):int(sh[2]*0.75)], axis=2),axis=1) 
+        #print 'self.timeavg', self.timeavg
+        # return average of entire image over time
         print " >>Before HPF: Noise floor (std/mean): %12.6f  largest std: %12.6f" % (numpy.mean(self.stdimg)/numpy.mean(self.avgimg), 
                numpy.amax(self.stdimg)/numpy.mean(self.avgimg))
 
         # color scheme: magenta with symbol is "raw" data for one pixel
         #               black is after averaged signal over space is subtracted over time
         #               red is after both corrections (boxcar and time acverage)
-        zid = self.imageData[:,ipx,ipy]-self.timeavg
-        mta = scipy.signal.detrend(self.timeavg)
+        #zid = self.imageData[:,ipx,ipy]-self.avgimg
+        mta = scipy.signal.detrend(self.avgimg)
         mtaa = numpy.mean(mta, axis=0)
         stdta = numpy.std(mta)
         rjstd = 2.0*stdta
-        pts = len(self.timeavg)
+        # pts = len(self.timeavg)
         reject = numpy.where(numpy.abs(mta) > rjstd)
-        trej = numpy.array(self.timebase[reject])
-        LPF = 0.2/dt
-        lfilt = SignalFilter_LPFBessel(scipy.signal.detrend(zid, axis=0), LPF, samplefreq=1.0/dt , NPole = 8, reduce = False)
-        if HAVE_MPL:
-            p1=pylab.subplot(3,1,1)
-            p1.plot(self.timebase, self.imageData[:,ipx,ipy] - numpy.mean(self.imageData[:,ipx,ipy]), 'mo-') # prior to any correction
-            
-            p1.plot(self.timebase, zid-numpy.mean(zid), 'k-') # after subtracting time averaged
-            p3=pylab.subplot(3,1,2)
-            
-            p3.plot(self.timebase, mta, 'g-')
-        
-        
-            p3.plot([0,numpy.amax(self.timebase)], [mtaa+rjstd,mtaa+rjstd], 'g--' )
-            p3.plot([0,numpy.amax(self.timebase)], [mtaa-rjstd,mtaa-rjstd], 'g--')
-        
-#        print trej.shape()
-#        print mta[:,reject].shape()
-#        p3.plot(trej, mta[:,reject], 'rx')
-        # calculate PSD of data
-            amp, freqs = mlab.psd(scipy.signal.detrend(zid, axis=0), Fs=1.0/dt )
-        
-            amp2, freqs2 = mlab.psd(scipy.signal.detrend(self.imageData[:,ipx,ipy], axis=0), Fs=1.0/dt )
-            amp3, freqs3 = mlab.psd(scipy.signal.detrend(lfilt, axis=0), Fs=1.0/dt )
-            p2 = pylab.subplot(3,1,3)
-            p2.loglog(freqs, amp, 'k-')
-            p2.loglog(freqs2, amp2, 'mo-')
-            p2.loglog(freqs3, amp3, 'cs-')
-        # subtract slow fluctuations
-        flpf = float(LPF)
+        #trej = numpy.array(self.timebase[reject])
+        LPF = float(0.2/dt)
+       
         sf = float(1.0/dt)
-        wn = [flpf/(sf/2.0)]
-        NPole=8
+        wn = [LPF/(sf/2.0)]
+        NPole = 8
         filter_b,filter_a=scipy.signal.bessel(
                 NPole,
                 wn,
                 btype = 'low',
                 output = 'ba')
         print "boxcar HPF"
-        for i in range(0, self.imageData.shape[1]):
-            for j in range(0, self.imageData.shape[2]):
-                self.imageData[:,i,j] = self.imageData[:,i,j] - self.timeavg
+        for i in range(0, self.imageData.shape[0]):
+            self.imageData[i,:,:] = self.imageData[i,:,:] - self.avgimg
 # OLD: stsci not available anymore
-#               box_2D_kernel = astropy.convolve.Box2DKernel(2*n_PtsPerCycle)
-#               box_2D_kernel = Box2DKernel(5)
-                box_2D_kernel = Box1DKernel(2*n_PtsPerCycle)
-#                box_2D_kernel = Box1DKernel(5)
-#               print self.imageData[:,i,j]
-#               print len(self.imageData[:,i,j])
-#               print box_2D_kernel
-                self.imageData[:,i,j] = self.imageData[:,i,j] - convolve_fft(self.imageData[:,i,j], box_2D_kernel) 
+            box_2D_kernel = Box2DKernel(2*n_PtsPerCycle)
+            self.imageData[i,:,:] = self.imageData[i,:,:] - convolve_fft(self.imageData[i,:,:], box_2D_kernel) 
 #                self.imageData[:,i,j] = self.imageData[:,i,j] - scipy.stsci.convolve.boxcar(self.imageData[:,i,j], (2*n_PtsPerCycle,)) 
-                self.imageData[:,i,j]=scipy.signal.lfilter(filter_b, filter_a, scipy.signal.detrend(self.imageData[:,i,j], axis=0)) # filter the incoming signal
+            # filter the incoming signal
+            self.imageData[i,:,:]=scipy.signal.lfilter(filter_b, filter_a, scipy.signal.detrend(self.imageData[i,:,:], axis=0)) 
+
         zid = self.imageData[:,ipx,ipy]
+        
+        print "BEssel filter and detrend"
         lfilt = SignalFilter_LPFBessel(scipy.signal.detrend(zid, axis=0), LPF, samplefreq=1.0/dt , NPole = 8, reduce = False)
-        if HAVE_MPL:
-            p1.plot(self.timebase, zid - numpy.mean(zid), 'r-')
-            p1.plot(self.timebase, lfilt - numpy.mean(lfilt), 'c-')
-            amp2, freqs2 = mlab.psd(scipy.signal.detrend(self.imageData[:,ipx,ipy], axis=0), Fs=1.0/dt )
-            p2.loglog(freqs2, amp2, 'r')
-            ymin, ymax = p2.get_ylim()
-            p2.set_ylim((0.01, ymax))
+        # if HAVE_MPL:
+        #     p1.plot(self.timebase, zid - numpy.mean(zid), 'r-')
+        #     p1.plot(self.timebase, lfilt - numpy.mean(lfilt), 'c-')
+        #     amp2, freqs2 = mlab.psd(scipy.signal.detrend(self.imageData[:,ipx,ipy], axis=0), Fs=1.0/dt )
+        #     p2.loglog(freqs2, amp2, 'r')
+        #     ymin, ymax = p2.get_ylim()
+        #     p2.set_ylim((0.01, ymax))
         self.stdimg = numpy.std(self.imageData, axis= 0) # and standard deviation
         print " >>after HPF: Noise floor (std/mean): %12.6f  largest std: %12.6f" % (numpy.mean(self.stdimg)/numpy.mean(self.avgimg), 
                numpy.amax(self.stdimg)/numpy.mean(self.avgimg))
@@ -449,9 +432,9 @@ class testAnalysis():
         # excluding bad trials
         trials = range(0, n_Periods)
         reject = reject[0]
-        print 'trials', trials
-        print 'reject', reject
-        print 'nptpercycle', n_PtsPerCycle
+        # print 'trials', trials
+        # print 'reject', reject
+        # print 'nptpercycle', n_PtsPerCycle
 
         #N.B.- Commenting this out seems to resolve issues.  Figure out why!
         # for i in range(0,len(reject)):
