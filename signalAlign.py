@@ -34,8 +34,11 @@ import pyqtgraph as pg #added to deal with plottng issues TFR 11/13/15
 #import scipy.stsci.convolve
 #import astropy.convolution
 from astropy.convolution import convolve_fft, convolve, Box2DKernel, Box1DKernel
+#from astropy import image
 import pickle
-
+import matplotlib
+import matplotlib.mlab as mlab
+import pylab
 # try:
 #     import matplotlib
 #TFR 11/13/15 inserted the following line to try to resolve issue with pylab.show
@@ -270,11 +273,12 @@ class testAnalysis():
             else:
                upflag = 0
             #print 'target:', target
-            self.subtract_Background(diffup=diffup)
+
+            #self.subtract_Background(diffup=diffup)
             self.Analysis_FourierMap_TFR(period=measuredPeriod, target = target,  bins=binsize, up=upflag)
         print 'target:', target
         if target > 0:
-            self.plotmaps_pg(mode = 1, target = target, gfilter = gfilt)
+            self.plotmaps(mode = 1, target = target, gfilter = gfilt)
 
     def subtract_Background(self, diffup=0.005):
         #loading background data
@@ -312,6 +316,7 @@ class testAnalysis():
             subtractor = np.zeros(bckimagedata.shape, float)
             diffimage = np.zeros(bckimagedata.shape, float)
             subtractor = np.mean(np.array([self.imageData,bckimagedata]), axis=0)
+            #diffimage=sub_func(self.imageData, subtractor)
             diffimage = self.imageData - subtractor
             # for i in range(bckimagedata.shape[1]):
             #     for j in range(bckimagedata.shape[2]):
@@ -329,24 +334,16 @@ class testAnalysis():
             stop = self.imageData.shape[0]
             bckimagedata = bckimagedata[: stop,:,:]
             subtractor=np.mean( np.array([ bckimagedata, self.imageData ]), axis=0 )
-            diffimage= self.imageData - subtractor
+            diffimage=sub_func(self.imageData, subtractor)
+            # diffimage= self.imageData - subtractor
             #self.imageData=self.imageData - subtractor
         diffimage = scipy.signal.detrend(diffimage, axis=0)    
         self.imageData = diffimage    
         return
 
-    def Analysis_FourierMap_TFR(self, period = 4.25, target = 1, mode=0, bins = 1, up=1):
+    def reshapeImage(self,period = 4.25, target = 1, mode=0, bins = 1, up=1 ):
         global D
-        D = []
-        self.DF = []
-        self.avgimg = []
-        self.stdimg = []
-        self.nFrames =self.imageData.shape[0]
-        self.imagePeriod = 0
-        # if HAVE_MPL:
-        #     pylab.figure(2)
-        
-        print "Analysis Starting"
+        print "reshape Starting"
 
 #         self.subtractBackground
 
@@ -361,111 +358,32 @@ class testAnalysis():
      
 # #determine the number of periods in the timeseries of the data
         self.imagePeriod = period# image period in seconds.
-#         w = 2.0 * numpy.pi * self.imagePeriod
+
         n_Periods = int(numpy.floor(maxt/self.imagePeriod)) # how many full periods in the image set?
-#         if self.nCycles > 0 and self.nCycles < n_Periods:
-#             n_Periods = self.nCycles
+
         n_PtsPerCycle = int(numpy.floor(self.imagePeriod/dt)); # estimate image points in a stimulus cycle
         ndt = self.imagePeriod/n_PtsPerCycle
-#         print 'ndt', ndt
-# #reduce the image stack to only the data we need
+
         self.imageData = self.imageData[range(0, n_Periods*n_PtsPerCycle),:,:] # reduce to only what we need
         self.timebase = numpy.arange(0, self.imageData.shape[0]*dt, dt)# reduce data in blocks by averaging
-#         if mode == 0:
-#             ipx = self.imageData.shape[1]/2
-#             ipy = self.imageData.shape[2]/2
-#         else:
-#             ipx = 64
-#             ipy = 64
 
-# #This breaks the image into pieces (fourths or sixths or whatever to speed up analysis)
-#         if bins > 1:
-#             redx=bins
-#             redy=bins
-#             nredx = int(sh[1]/redx)
-#             nredy = int(sh[2]/redy)
-#             newImage = numpy.zeros((self.imageData.shape[0], nredx, nredy))
-#             print sh, nredx, nredy
-#             print self.imageData.shape, newImage.shape
-#             for i in range(0, nredx-1):
-#                 for j in range(0, nredy-1):
-#     #                print i,j,i*redx,(i+1)*redx-1,j*redx,(j+1)*redy-1
-#                     newImage[:,i,j] = numpy.mean(numpy.mean(self.imageData[:,i*redx:(i+1)*redx-1, j*redy:(j+1)*redy-1],axis=2),axis=1)
-#             self.imageData = newImage
-#             sh = self.imageData.shape
-#             ipx = ipx/redx
-#             ipy = ipy/redy
-
-#         else:
-#             redx = bins
-#             redy = bins
-#         print "# Periods: %d  Pts/cycle: %d Cycle dt %8.4fs (%8.3fHz) Cycle: %7.4fs" %(n_Periods, n_PtsPerCycle, ndt, 1.0/ndt, self.imagePeriod)
-        
-# # get the average image and the average of the whole image over time
-#         self.avgimg = numpy.mean(self.imageData, axis=0) # get mean image for reference later: average across all time
-#         #print 'self.avgimg', self.avgimg
-#         self.stdimg = numpy.std(self.imageData, axis= 0) # and standard deviation
-#         # timeavg is calculated on the central region only:
-#         #self.timeavg = numpy.mean(numpy.mean(self.imageData[:,int(sh[1]*0.25):int(sh[1]*0.75),int(sh[2]*0.25):int(sh[2]*0.75)], axis=2),axis=1) 
-#         #print 'self.timeavg', self.timeavg
-#         # return average of entire image over time
-#         print " >>Before HPF: Noise floor (std/mean): %12.6f  largest std: %12.6f" % (numpy.mean(self.stdimg)/numpy.mean(self.avgimg), 
-#                numpy.amax(self.stdimg)/numpy.mean(self.avgimg))
-
-#         # color scheme: magenta with symbol is "raw" data for one pixel
-#         #               black is after averaged signal over space is subtracted over time
-#         #               red is after both corrections (boxcar and time acverage)
-#         #zid = self.imageData[:,ipx,ipy]-self.avgimg
-#         mta = scipy.signal.detrend(self.avgimg)
-#         mtaa = numpy.mean(mta, axis=0)
-#         stdta = numpy.std(mta)
-#         rjstd = 2.0*stdta
-#         # pts = len(self.timeavg)
-#         reject = numpy.where(numpy.abs(mta) > rjstd)
-#         #trej = numpy.array(self.timebase[reject])
-#         LPF = float(0.2/dt)
-       
-#         sf = float(1.0/dt)
-#         wn = [LPF/(sf/2.0)]
-#         NPole = 8
-#         filter_b,filter_a=scipy.signal.bessel(
-#                 NPole,
-#                 wn,
-#                 btype = 'low',
-#                 output = 'ba')
-#         print "boxcar HPF"
-#         for i in range(0, self.imageData.shape[0]):
-#             self.imageData[i,:,:] = self.imageData[i,:,:] - self.avgimg
-# # OLD: stsci not available anymore
-#             box_2D_kernel = Box2DKernel(2*n_PtsPerCycle)
-#             self.imageData[i,:,:] = self.imageData[i,:,:] - convolve_fft(self.imageData[i,:,:], box_2D_kernel) 
-# #                self.imageData[:,i,j] = self.imageData[:,i,j] - scipy.stsci.convolve.boxcar(self.imageData[:,i,j], (2*n_PtsPerCycle,)) 
-#             # filter the incoming signal
-#             self.imageData[i,:,:]=scipy.signal.lfilter(filter_b, filter_a, scipy.signal.detrend(self.imageData[i,:,:], axis=0)) 
-
-#         zid = self.imageData[:,ipx,ipy]
-        
-#         print "BEssel filter and detrend"
-#         lfilt = SignalFilter_LPFBessel(scipy.signal.detrend(zid, axis=0), LPF, samplefreq=1.0/dt , NPole = 8, reduce = False)
-#         # if HAVE_MPL:
-#         #     p1.plot(self.timebase, zid - numpy.mean(zid), 'r-')
-#         #     p1.plot(self.timebase, lfilt - numpy.mean(lfilt), 'c-')
-#         #     amp2, freqs2 = mlab.psd(scipy.signal.detrend(self.imageData[:,ipx,ipy], axis=0), Fs=1.0/dt )
-#         #     p2.loglog(freqs2, amp2, 'r')
-#         #     ymin, ymax = p2.get_ylim()
-#         #     p2.set_ylim((0.01, ymax))
-#         self.stdimg = numpy.std(self.imageData, axis= 0) # and standard deviation
-#         print " >>after HPF: Noise floor (std/mean): %12.6f  largest std: %12.6f" % (numpy.mean(self.stdimg)/numpy.mean(self.avgimg), 
-#                numpy.amax(self.stdimg)/numpy.mean(self.avgimg))
-        
-#         print "now reshaping"
-#         self.n_times = numpy.arange(0, n_PtsPerCycle*ndt, ndt) # just one cycle
-#         # put data into new shape to prepare for mean. "Folds" data by cycles". Also multiply to make average work
-#         print 'shape of slef.imageData', self.imageData.shape
-#         print 'self.imageData', self.imageData
         self.imageData = numpy.reshape(self.imageData, 
                          (n_Periods, n_PtsPerCycle, sh[1], sh[2])).astype('float32')
         print 'shape of rescaled imagedata', self.imageData.shape
+        return
+
+    def Analysis_FourierMap_TFR(self, period = 4.25, target = 1, mode=0, bins = 1, up=1):
+        global D
+        D = []
+        self.DF = []
+        self.avgimg = []
+        self.stdimg = []
+        self.nFrames =self.imageData.shape[0]
+        self.imagePeriod = 0
+        # if HAVE_MPL:
+        #     pylab.figure(2)
+        
+ 
 #         print "now calculating mean"
 #         # excluding bad trials
 #         trials = range(0, n_Periods)
@@ -487,6 +405,7 @@ class testAnalysis():
 #         D = scipy.signal.detrend(D, axis=0)
 #         # calculate FFT and get amplitude and phase
 #         self.DF = numpy.fft.fft(D, axis = 0)
+        self.reshapeImage()
         self.DF = numpy.fft.fft(self.imageData, axis = 0)
         ampimg = numpy.abs(self.DF[1,:,:]).astype('float32')
         phaseimg = numpy.angle(self.DF[1,:,:]).astype('float32')
@@ -514,12 +433,100 @@ class testAnalysis():
     def sub_func(self, a, avg):
         return(a - avg)
 
+    def plotmaps(self, mode = 0, target = 1, gfilter = 0):
+        global D
+        max1 = numpy.amax(self.amplitudeImage1)
+        if target > 1:
+            max1 = numpy.amax([max1, numpy.amax(self.amplitudeImage2)])
+        max1 = 10.0*int(max1/10.0)
+        pylab.figure(1)
+        pylab.subplot(2,3,1)
+        pylab.title('Amplitude Map 1')
+        #scipy.ndimage.gaussian_filter(self.amplitudeImage1, 2, order=0, output=self.amplitudeImage1, mode='reflect')
+        ampimg = scipy.ndimage.gaussian_filter(self.amplitudeImage1,gfilt, order=0, mode='reflect')
+        print 'ampimg:', ampimg
+        imga1 = pylab.imshow(ampimg)
+        pylab.colorbar()
+        imga1.set_clim = (0.0, max1)
+        pylab.subplot(2,3,4)
+        pylab.title('Phase Map 1')
+        imgp1 = pylab.imshow(scipy.ndimage.gaussian_filter(self.phaseImage1, gfilt, order=0,mode='reflect'), cmap=matplotlib.cm.hsv)
+        imgp1.set_clim=(-numpy.pi/2.0, numpy.pi/2.0)
+        pylab.colorbar()
 
+        if mode == 0:
+            pylab.subplot(2,3,3)
+            for i in range(0, self.nPhases):
+                pylab.plot(ta.n_times, D[:,5,5].view(ndarray))
+                #pylab.plot(self.n_times, D[:,i*55+20, 60])
+                pylab.hold('on')
+            pylab.title('Waveforms')
+
+            pylab.subplot(2,3,6)
+            for i in range(0, self.nPhases):
+                pylab.plot(ta.n_times, self.DF[:,5,5].view(ndarray))
+                #pylab.plot(self.DF[:,i*55+20, 60])
+                pylab.hold('on')
+            pylab.title('FFTs')
+
+        if mode == 1 and target > 1:
+            pylab.subplot(2,3,2)
+            pylab.title('Amplitude Map2')
+            #scipy.ndimage.gaussian_filter(self.amplitudeImage2, 2, order=0, output=self.amplitudeImage2, mode='reflect')
+            imga2 = pylab.imshow(scipy.ndimage.gaussian_filter(self.amplitudeImage2,gfilt, order=0, mode='reflect'))
+            imga2.set_clim = (0.0, max1)
+            pylab.colorbar()
+            pylab.subplot(2,3,5)
+            imgp2 = pylab.imshow(scipy.ndimage.gaussian_filter(self.phaseImage2, gfilt, order=0,mode='reflect'), cmap=matplotlib.cm.hsv)
+            pylab.colorbar()
+            imgp2.set_clim=(-numpy.pi/2.0, numpy.pi/2.0)
+            pylab.title('Phase Map2')
+            # doubled phase map
+            pylab.subplot(2,3,6)
+            #scipy.ndimage.gaussian_filter(self.phaseImage2, 2, order=0, output=self.phaseImage2, mode='reflect')
+            np1 = scipy.ndimage.gaussian_filter(self.phaseImage1, gfilt, order=0, mode='reflect')
+            np2 = scipy.ndimage.gaussian_filter(self.phaseImage2, gfilt, order=0, mode='reflect')
+            dphase = np1 + np2
+            #dphase = self.phaseImage1 - self.phaseImage2
+           
+            #scipy.ndimage.gaussian_filter(dphase, 2, order=0, output=dphase, mode='reflect')
+            imgpdouble = pylab.imshow(dphase, cmap=matplotlib.cm.hsv)
+            pylab.title('2x Phi map')
+            pylab.colorbar()
+            imgpdouble.set_clim=(-numpy.pi, numpy.pi)
+
+
+        if mode == 2 or mode == 1:
+            if self.phasex == []:
+                self.phasex = numpy.random.randint(0, high=D.shape[1], size=D.shape[1])
+                self.phasey = numpy.random.randint(0, high=D.shape[2], size=D.shape[2])
+
+            pylab.subplot(2,3,3)
+            sh = D.shape
+            spr = sh[2]/self.nPhases
+            for i in range(0, self.nPhases):
+                Dm = self.avgimg[i*spr,i*spr] # diagonal run
+                pylab.plot(self.n_times, 100.0*(D[:,self.phasex[i], self.phasey[i]]/Dm))
+                pylab.hold('on')
+            pylab.title('Waveforms')
+
+        if mode == 2:
+            pylab.subplot(2,3,6)
+            for i in range(0, self.nPhases):
+                pylab.plot(self.DF[1:,80, 80])
+                pylab.hold('on')
+            pylab.title('FFTs')
+
+        pylab.show()
 
 # plot data
     def plotmaps_pg(self, mode = 0, target = 1, gfilter = 0):
-    
-        # # ## Set up plots/images in window
+            #    self.tailPlot = pg.PlotWidget()
+            #    self.gridLayout.addWidget(self.fslPlot, 3, 1, 1, 1)
+            #    self.label_up(self.tailPlot, 'V (V)', 'I (A)', 'Tail Current')
+
+            # Add a color scal
+                    # # ## Set up plots/images in window
         # self.view = pg.GraphicsView()
         # l = pg.GraphicsLayout(border=(100,100,100))
         # self.view.setCentralItem(l)
@@ -611,7 +618,7 @@ class testAnalysis():
             #scipy.ndimage.gaussian_filter(dphase, 2, order=0, output=dphase, mode='reflect')
             #self.phiView.addItem(pg.ImageItem(dphase))
             self.phi = pg.image(dphase, title="2x Phi map", levels=(-2*np.pi, 2*np.pi))
-            self.color_scale = pg.GradientLegend((20, 150), (-10, -10))
+            
             #imgpdouble = pylab.imshow(dphase, cmap=matplotlib.cm.hsv)
             #pylab.title('2x Phi map')
             #pylab.colorbar()
@@ -647,13 +654,12 @@ class testAnalysis():
                 spectrum = np.abs(self.DF)**2
                 self.fftPlt.plot(spectrum[1:,80,80])
                 #pyqtgraph.intColor(index, hues=17, values=1, maxValue=255, minValue=150, maxHue=360, minHue=0, sat=255, alpha=255, **kargs)
-                self.color_scale = pg.GradientLegend((20, 150), (-10, -10))
-                self.data_plot.scene().addItem(self.color_scale)
+                
                 #self.fftPlt.plot(self.DF[1:,80,80]) ## causing errors and i'm not sure what the desired thing is, Exception: Can not plot complex data types.
                 #pass
                 #pylab.hold('on')
             #pylab.title('FFTs')
-
+        
         print "plotmaps Block 5"
         print "plotting complete"
         return
