@@ -311,12 +311,14 @@ class testAnalysis():
             print 'stop2'
             subtractor = np.zeros(bckimagedata.shape, float)
             diffimage = np.zeros(bckimagedata.shape, float)
-            for i in range(bckimagedata.shape[1]):
-                for j in range(bckimagedata.shape[2]):
-                    # subtractor[i,j,:]= np.mean( np.array([ bckimagedata[i,j,:], self.imageData[i,j,:] ]), axis=0 )
-                    subtractor[:,i,j]=  np.array([ bckimagedata[:,i,j] + self.imageData[:,i,j] ])/2
-                    print 'subtractor', i,',',j
-                    diffimage[:,i,j] = self.imageData[:,i,j] - subtractor[:,i,j]
+            subtractor = np.mean(np.array([self.imageData,bckimagedata]), axis=0)
+            diffimage = self.imageData - subtractor
+            # for i in range(bckimagedata.shape[1]):
+            #     for j in range(bckimagedata.shape[2]):
+            #         # subtractor[i,j,:]= np.mean( np.array([ bckimagedata[i,j,:], self.imageData[i,j,:] ]), axis=0 )
+            #         subtractor[:,i,j]=  np.array([ bckimagedata[:,i,j] + self.imageData[:,i,j] ])/2
+            #         print 'subtractor', i,',',j
+            #         diffimage[:,i,j] = self.imageData[:,i,j] - subtractor[:,i,j]
             #subtractor=np.mean( np.array([ bckimagedata, self.imageData ]), axis=0 )
             print 'stop 3'
             # diffimage = self.imageData - subtractor
@@ -516,7 +518,7 @@ class testAnalysis():
 
 # plot data
     def plotmaps_pg(self, mode = 0, target = 1, gfilter = 0):
-        app = pg.Qt.QtGui.QApplication([])
+    
         # # ## Set up plots/images in window
         # self.view = pg.GraphicsView()
         # l = pg.GraphicsLayout(border=(100,100,100))
@@ -608,7 +610,8 @@ class testAnalysis():
            
             #scipy.ndimage.gaussian_filter(dphase, 2, order=0, output=dphase, mode='reflect')
             #self.phiView.addItem(pg.ImageItem(dphase))
-            self.phi = pg.image(dphase, title="2x Phi map", levels=(-np.pi, np.pi))
+            self.phi = pg.image(dphase, title="2x Phi map", levels=(-2*np.pi, 2*np.pi))
+            self.color_scale = pg.GradientLegend((20, 150), (-10, -10))
             #imgpdouble = pylab.imshow(dphase, cmap=matplotlib.cm.hsv)
             #pylab.title('2x Phi map')
             #pylab.colorbar()
@@ -643,13 +646,17 @@ class testAnalysis():
                 #pylab.plot(self.DF[1:,80, 80])
                 spectrum = np.abs(self.DF)**2
                 self.fftPlt.plot(spectrum[1:,80,80])
+                #pyqtgraph.intColor(index, hues=17, values=1, maxValue=255, minValue=150, maxHue=360, minHue=0, sat=255, alpha=255, **kargs)
+                self.color_scale = pg.GradientLegend((20, 150), (-10, -10))
+                self.data_plot.scene().addItem(self.color_scale)
                 #self.fftPlt.plot(self.DF[1:,80,80]) ## causing errors and i'm not sure what the desired thing is, Exception: Can not plot complex data types.
                 #pass
                 #pylab.hold('on')
             #pylab.title('FFTs')
 
         print "plotmaps Block 5"
-
+        print "plotting complete"
+        return
         #pylab.show()
         #self.view.show()
 
