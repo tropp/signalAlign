@@ -270,7 +270,7 @@ class testAnalysis():
             else:
                upflag = 0
             #print 'target:', target
-            self.subtract_Background(diffup=diffup)
+            #self.subtract_Background(diffup=diffup)
             self.Analysis_FourierMap_TFR(period=measuredPeriod, target = target,  bins=binsize, up=upflag)
         print 'target:', target
         if target > 0:
@@ -518,7 +518,10 @@ class testAnalysis():
 
 # plot data
     def plotmaps_pg(self, mode = 0, target = 1, gfilter = 0):
-    
+        pos = np.array([0.0, 0.5, 1.0])
+        color = np.array([[0,0,0,255], [255,128,0,255], [255,255,0,255]], dtype=np.ubyte)
+        maps = pg.ColorMap(pos, color)
+        lut = maps.getLookupTable(0.0, 1.0, 256)
         # # ## Set up plots/images in window
         # self.view = pg.GraphicsView()
         # l = pg.GraphicsLayout(border=(100,100,100))
@@ -606,55 +609,72 @@ class testAnalysis():
             np1 = scipy.ndimage.gaussian_filter(self.phaseImage1, gfilt, order=0, mode='reflect')
             np2 = scipy.ndimage.gaussian_filter(self.phaseImage2, gfilt, order=0, mode='reflect')
             dphase = np1 + np2
+            print 'shape of dphase', dphase.shape
             #dphase = self.phaseImage1 - self.phaseImage2
             print 'min phase', np.amin(dphase)
             print 'max phase', np.amax(dphase)
-            #scipy.ndimage.gaussian_filter(dphase, 2, order=0, output=dphase, mode='reflect')
+            for i in range(dphase.shape[0]):
+                for j in range(dphase.shape[1]):
+                    for k in range(dphase.shape[2]):
+                        if dphase[i,j,k]<0:
+                            dphase[i,j,k] = dphase[i,j,k]+2*np.pi
+
+            print 'min phase', np.amin(dphase)
+            print 'max phase', np.amax(dphase)
+            
+            win = pg.GraphicsWindow()
+            view = win.addViewBox()
+            view.setAspectLocked(True)
+            item = pg.ImageItem(dphase)
+            view.addItem(item)
+            item.setLookupTable(lut)
+            item.setLevels([0,1])
             #self.phiView.addItem(pg.ImageItem(dphase))
-            self.phi = pg.image(dphase, title="2x Phi map", levels=(-np.pi, np.pi))
-           
+            # self.phi = pg.image(dphase, title="2x Phi map", levels=(0, 2*np.pi))
+            # self.phi.setLookupTable(lut)
+            # self.phi.setLevels([0,1])
             #imgpdouble = pylab.imshow(dphase, cmap=matplotlib.cm.hsv)
             #pylab.title('2x Phi map')
             #pylab.colorbar()
             #imgpdouble.set_clim=(-numpy.pi, numpy.pi)
 
-        print "plotmaps Block 3"
+        # print "plotmaps Block 3"
 
-        # if mode == 2 or mode == 1:
-        #     # if self.phasex == []:
-        #     #     self.phasex = numpy.random.randint(0, high=D.shape[1], size=D.shape[1])
-        #     #     self.phasey = numpy.random.randint(0, high=D.shape[2], size=D.shape[2])
+        # # if mode == 2 or mode == 1:
+        # #     # if self.phasex == []:
+        # #     #     self.phasex = numpy.random.randint(0, high=D.shape[1], size=D.shape[1])
+        # #     #     self.phasey = numpy.random.randint(0, high=D.shape[2], size=D.shape[2])
 
-        #     #pylab.subplot(2,3,3)
-        #     sh = D.shape
-        #     spr = sh[2]/self.nPhases
-        #     wvfms=[]
+        # #     #pylab.subplot(2,3,3)
+        # #     sh = D.shape
+        # #     spr = sh[2]/self.nPhases
+        # #     wvfms=[]
+        # #     for i in range(0, self.nPhases):
+        # #         Dm = self.avgimg[i*spr,i*spr] # diagonal run
+        # #         wvfms=self.n_times, 100.0*(D[:,self.phasex[i], self.phasey[i]]/Dm)
+        # #         #pylab.plot(self.n_times, 100.0*(D[:,self.phasex[i], self.phasey[i]]/Dm))
+        # #         self.wavePlt.plot(self.n_times, 100.0*(D[:,self.phasex[i], self.phasey[i]]/Dm))
+        # #         #pylab.hold('on')
+        #         #self.plotlist.append(pg.image(wvfms, title="Waveforms"))
+        #         #print "it worked"
+        #     #pylab.title('Waveforms')
+
+        # print "plotmaps Block 4"
+
+        # if mode == 2:
+        #     #pylab.subplot(2,3,6)
         #     for i in range(0, self.nPhases):
-        #         Dm = self.avgimg[i*spr,i*spr] # diagonal run
-        #         wvfms=self.n_times, 100.0*(D[:,self.phasex[i], self.phasey[i]]/Dm)
-        #         #pylab.plot(self.n_times, 100.0*(D[:,self.phasex[i], self.phasey[i]]/Dm))
-        #         self.wavePlt.plot(self.n_times, 100.0*(D[:,self.phasex[i], self.phasey[i]]/Dm))
-        #         #pylab.hold('on')
-                #self.plotlist.append(pg.image(wvfms, title="Waveforms"))
-                #print "it worked"
-            #pylab.title('Waveforms')
-
-        print "plotmaps Block 4"
-
-        if mode == 2:
-            #pylab.subplot(2,3,6)
-            for i in range(0, self.nPhases):
-                #pylab.plot(self.DF[1:,80, 80])
-                spectrum = np.abs(self.DF)**2
-                self.fftPlt.plot(spectrum[1:,80,80])
-                #pyqtgraph.intColor(index, hues=17, values=1, maxValue=255, minValue=150, maxHue=360, minHue=0, sat=255, alpha=255, **kargs)
+        #         #pylab.plot(self.DF[1:,80, 80])
+        #         spectrum = np.abs(self.DF)**2
+        #         self.fftPlt.plot(spectrum[1:,80,80])
+        #         #pyqtgraph.intColor(index, hues=17, values=1, maxValue=255, minValue=150, maxHue=360, minHue=0, sat=255, alpha=255, **kargs)
                 
-                #self.fftPlt.plot(self.DF[1:,80,80]) ## causing errors and i'm not sure what the desired thing is, Exception: Can not plot complex data types.
-                #pass
-                #pylab.hold('on')
-            #pylab.title('FFTs')
+        #         #self.fftPlt.plot(self.DF[1:,80,80]) ## causing errors and i'm not sure what the desired thing is, Exception: Can not plot complex data types.
+        #         #pass
+        #         #pylab.hold('on')
+        #     #pylab.title('FFTs')
 
-        print "plotmaps Block 5"
+        # print "plotmaps Block 5"
         print "plotting complete"
         return
         #pylab.show()
