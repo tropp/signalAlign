@@ -305,13 +305,15 @@ class testAnalysis():
         bckimagedata = im[np.logical_and(rawtimes <= audiomax, rawtimes >= audiomin)]
         #check that the background image and the data are the same shape and average
         #then subtract the average from the stimulated data
-
+        bckimagedata = reshapeImage(inputdata=bckimagedata)
+        self.imagedata = reshapeImage(inputdata=self.imageData)
         print 'shape of background', bckimagedata.shape
+        print 'shape of imageData'. self.imageData.shape
         if bckimagedata.shape[0] <= self.imageData.shape[0]:
             print 'image is longer'
             stop = bckimagedata.shape[0]
             print 'stop'
-            self.imageData=self.imageData[: stop,:,:]
+            self.imageData=self.imageData[: stop,:,:,:]
             print 'stop2'
             subtractor = np.zeros(bckimagedata.shape, float)
             diffimage = np.zeros(bckimagedata.shape, float)
@@ -330,30 +332,30 @@ class testAnalysis():
             #self.imageData=self.imageData - subtractor
             
         else:
-            print 'background is longer'
-            stop = self.imageData.shape[0]
-            bckimagedata = bckimagedata[: stop,:,:]
-            subtractor=np.mean( np.array([ bckimagedata, self.imageData ]), axis=0 )
-            diffimage=sub_func(self.imageData, subtractor)
-            # diffimage= self.imageData - subtractor
-            #self.imageData=self.imageData - subtractor
+            print 'error! image is shorter, fix this code!'
+            # print 'background is longer'
+            # stop = self.imageData.shape[0]
+            # bckimagedata = bckimagedata[: stop,:,:]
+            # subtractor=np.mean( np.array([ bckimagedata, self.imageData ]), axis=0 )
+            # diffimage=sub_func(self.imageData, subtractor)
+            # # diffimage= self.imageData - subtractor
+            # #self.imageData=self.imageData - subtractor
         diffimage = scipy.signal.detrend(diffimage, axis=0)    
         self.imageData = diffimage    
         return
 
-    def reshapeImage(self,period = 4.25, target = 1, mode=0, bins = 1, up=1 ):
+    def reshapeImage(self, inputdata = self.imageData, period = 4.25, target = 1, mode=0, bins = 1, up=1 ):
         global D
         print "reshape Starting"
-
 #         self.subtractBackground
-
 # # first squeeze the image to 3d if it is 4d
         maxt = self.times[-1] # find last image time
         print "Duration of Image Stack: %9.3f s (%8.3f min)\n" % (maxt, maxt/60.0)
 #         sh = self.imageData.shape
 #         if len(sh) == 4:
 #            self.imageData = self.imageData.squeeze()
-        sh = self.imageData.shape
+        #sh = self.imageData.shape
+        #sh = inputdata
         dt = numpy.mean(numpy.diff(self.times)) # get the mean dt
      
 # #determine the number of periods in the timeseries of the data
@@ -364,13 +366,12 @@ class testAnalysis():
         n_PtsPerCycle = int(numpy.floor(self.imagePeriod/dt)); # estimate image points in a stimulus cycle
         ndt = self.imagePeriod/n_PtsPerCycle
 
-        self.imageData = self.imageData[range(0, n_Periods*n_PtsPerCycle),:,:] # reduce to only what we need
+        inputdata = inputdata[range(0, n_Periods*n_PtsPerCycle),:,:] # reduce to only what we need
         self.timebase = numpy.arange(0, self.imageData.shape[0]*dt, dt)# reduce data in blocks by averaging
 
-        self.imageData = numpy.reshape(self.imageData, 
-                         (n_Periods, n_PtsPerCycle, sh[1], sh[2])).astype('float32')
-        print 'shape of rescaled imagedata', self.imageData.shape
-        return
+        inputdata = numpy.reshape(inputdata,(n_Periods, n_PtsPerCycle, sh[1], sh[2])).astype('float32')
+        print 'shape of rescaled imagedata', inputdata.shape
+        return inputdata
 
     def Analysis_FourierMap_TFR(self, period = 4.25, target = 1, mode=0, bins = 1, up=1):
         global D
@@ -405,7 +406,7 @@ class testAnalysis():
 #         D = scipy.signal.detrend(D, axis=0)
 #         # calculate FFT and get amplitude and phase
 #         self.DF = numpy.fft.fft(D, axis = 0)
-        self.reshapeImage()
+        #self.reshapeImage()
         self.DF = numpy.fft.fft(self.imageData, axis = 0)
         ampimg = numpy.abs(self.DF[1,:,:]).astype('float32')
         phaseimg = numpy.angle(self.DF[1,:,:]).astype('float32')
