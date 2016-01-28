@@ -607,11 +607,12 @@ class testAnalysis():
             np2 = scipy.ndimage.gaussian_filter(self.phaseImage2, gfilt, order=0, mode='reflect')
             dphase = np1 + np2
             #dphase = self.phaseImage1 - self.phaseImage2
-           
+            print 'min phase', np.amin(dphase)
+            print 'max phase', np.amax(dphase)
             #scipy.ndimage.gaussian_filter(dphase, 2, order=0, output=dphase, mode='reflect')
             #self.phiView.addItem(pg.ImageItem(dphase))
-            self.phi = pg.image(dphase, title="2x Phi map", levels=(-2*np.pi, 2*np.pi))
-            self.color_scale = pg.GradientLegend((20, 150), (-10, -10))
+            self.phi = pg.image(dphase, title="2x Phi map", levels=(-np.pi, np.pi))
+           
             #imgpdouble = pylab.imshow(dphase, cmap=matplotlib.cm.hsv)
             #pylab.title('2x Phi map')
             #pylab.colorbar()
@@ -647,8 +648,7 @@ class testAnalysis():
                 spectrum = np.abs(self.DF)**2
                 self.fftPlt.plot(spectrum[1:,80,80])
                 #pyqtgraph.intColor(index, hues=17, values=1, maxValue=255, minValue=150, maxHue=360, minHue=0, sat=255, alpha=255, **kargs)
-                self.color_scale = pg.GradientLegend((20, 150), (-10, -10))
-                self.data_plot.scene().addItem(self.color_scale)
+                
                 #self.fftPlt.plot(self.DF[1:,80,80]) ## causing errors and i'm not sure what the desired thing is, Exception: Can not plot complex data types.
                 #pass
                 #pylab.hold('on')
