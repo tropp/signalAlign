@@ -286,9 +286,6 @@ class testAnalysis():
         print 'running subtractBackground'
         bckfile = videobasepath + '011.ma'
         bckaudio = audiobasepath + '011/DaqDevice.ma'
-        # timestampup = timestamp[11][0]
-        # audioupstamp = timestamp[11][1]
-        #diffup = audioupstamp - timestampup
         
         try:
             im = MetaArray(file = bckfile,  subset=(slice(0,2), slice(64,128), slice(64,128)))
@@ -303,13 +300,14 @@ class testAnalysis():
        
         audiomax = np.max(audiotime) + diffup
         rawtimes = im.axisValues('Time').astype('float32')
+        adjustedtime = rawtimes[np.logical_and(rawtimes <= audiomax+.5, rawtimes >= audiomin)]
         bckimagedata = im[np.logical_and(rawtimes <= audiomax, rawtimes >= audiomin)]
         raw=self.imageData
         #check that the background image and the data are the same shape and average
         #then subtract the average from the stimulated data
-        getout = fac_lift(bckimagedata)
+        getout = fac_lift(bckimagedata,adjustedtime)
         bckimagedata=getout
-        getout2 = fac_lift(raw)
+        getout2 = fac_lift(raw, adjustedtime)
         self.imageData=getout2
         print 'shape of background', bckimagedata.shape
         print 'shape of imageData', self.imageData.shape
@@ -324,62 +322,14 @@ class testAnalysis():
             subtractor = np.mean(np.array([self.imageData,bckimagedata]), axis=0)
             #diffimage=sub_func(self.imageData, subtractor)
             diffimage = self.imageData - subtractor
-            # for i in range(bckimagedata.shape[1]):
-            #     for j in range(bckimagedata.shape[2]):
-            #         # subtractor[i,j,:]= np.mean( np.array([ bckimagedata[i,j,:], self.imageData[i,j,:] ]), axis=0 )
-            #         subtractor[:,i,j]=  np.array([ bckimagedata[:,i,j] + self.imageData[:,i,j] ])/2
-            #         print 'subtractor', i,',',j
-            #         diffimage[:,i,j] = self.imageData[:,i,j] - subtractor[:,i,j]
-            #subtractor=np.mean( np.array([ bckimagedata, self.imageData ]), axis=0 )
-            print 'stop 3'
-            # diffimage = self.imageData - subtractor
-            #self.imageData=self.imageData - subtractor
-            
+            print 'stop 3'     
         else:
             print 'error! image is shorter, fix this code!'
-            # print 'background is longer'
-            # stop = self.imageData.shape[0]
-            # bckimagedata = bckimagedata[: stop,:,:]
-            # subtractor=np.mean( np.array([ bckimagedata, self.imageData ]), axis=0 )
-            # diffimage=sub_func(self.imageData, subtractor)
-            # # diffimage= self.imageData - subtractor
-            # #self.imageData=self.imageData - subtractor
         diffimage = scipy.signal.detrend(diffimage, axis=0)    
         self.imageData = diffimage    
         return
 
-    def fac_lift(self, goingin):
-
-        global D
-        period = 4.25
-        print "reshape Starting"
-    # #         self.subtractBackground
-    # # # first squeeze the image to 3d if it is 4d
-    #     maxt = self.times[-1] # find last image time
-    #     print "Duration of Image Stack: %9.3f s (%8.3f min)\n" % (maxt, maxt/60.0)
-    # #         sh = self.imageData.shape
-    # #         if len(sh) == 4:
-    # #            self.imageData = self.imageData.squeeze()
-    #     #sh = self.imageData.shape
-    #     #sh = inputdata
-    #     dt = numpy.mean(numpy.diff(self.times)) # get the mean dt
-     
-    # # #determine the number of periods in the timeseries of the data
-    #     self.imagePeriod = period# image period in seconds.
-
-    #     n_Periods = int(numpy.floor(maxt/self.imagePeriod)) # how many full periods in the image set?
-
-    #     n_PtsPerCycle = int(numpy.floor(self.imagePeriod/dt)); # estimate image points in a stimulus cycle
-    #     ndt = self.imagePeriod/n_PtsPerCycle
-
-    #     goingin = goingin[range(0, n_Periods*n_PtsPerCycle),:,:] # reduce to only what we need
-    #     self.timebase = numpy.arange(0, self.imageData.shape[0]*dt, dt)# reduce data in blocks by averaging
-
-    #     goingin = numpy.reshape(goingin,(n_Periods, n_PtsPerCycle, sh[1], sh[2])).astype('float32')
-    #     print 'shape of rescaled imagedata', goingin.shape
-        
-        return goingin
-
+    
     def Analysis_FourierMap_TFR(self, period = 4.25, target = 1, mode=0, bins = 1, up=1):
         global D
         D = []
@@ -390,7 +340,7 @@ class testAnalysis():
         self.imagePeriod = 0
         # if HAVE_MPL:
         #     pylab.figure(2)
-        
+        self.imageData = self.imageData.squeeze()
  
 #         print "now calculating mean"
 #         # excluding bad trials
@@ -628,9 +578,9 @@ class testAnalysis():
         print 'max phase', np.amax(dphase)
         for i in range(dphase.shape[0]):
             for j in range(dphase.shape[1]):
-                # for k in range(dphase.shape[2]):
-                if dphase[i,j]<0:
-                    dphase[i,j] = dphase[i,j]+2*np.pi
+                for k in range(dphase.shape[2]):
+                    if dphase[i,j,k]<0:
+                        dphase[i,j,k] = dphase[i,j,k]+2*np.pi
 
         print 'min phase', np.amin(dphase)
         print 'max phase', np.amax(dphase)
@@ -732,6 +682,30 @@ class testAnalysis():
                 for k in range(0, newsh[2]):
                     result[i, j, k] = indata[i, ji[j], ki[k]].mean()
         return result
+
+def fac_lift(goingin, times, period=4.25,):
+        period = 4.25
+        print "reshape Starting"
+
+        maxt = times[-1] # find last image time
+        print "Duration of Image Stack: %9.3f s (%8.3f min)\n" % (maxt, maxt/60.0)
+        dt = numpy.mean(numpy.diff(times)) # get the mean dt
+        sh = np.shape(goingin)
+    # #determine the number of periods in the timeseries of the data
+        period# image period in seconds.
+
+        n_Periods = int(numpy.floor(maxt/period)) # how many full periods in the image set?
+
+        n_PtsPerCycle = int(numpy.floor(period/dt)); # estimate image points in a stimulus cycle
+        ndt = period/n_PtsPerCycle
+
+        goingin = goingin[range(0, n_Periods*n_PtsPerCycle),:,:] # reduce to only what we need
+        times = numpy.arange(0,goingin.shape[0]*dt, dt)# reduce data in blocks by averaging
+
+        goingin = numpy.reshape(goingin,(n_Periods, n_PtsPerCycle, sh[1], sh[2])).astype('float32')
+        print 'shape of rescaled imagedata', goingin.shape
+        
+        return goingin
 
 
 #### This function is copied from pylibrary.Utility. It is here locally so we don't need the dependencies that pylibrary requires
