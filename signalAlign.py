@@ -39,6 +39,7 @@ import pickle
 import matplotlib
 import matplotlib.mlab as mlab
 import pylab
+from PyQt4 import QtGui
 # try:
 #     import matplotlib
 #TFR 11/13/15 inserted the following line to try to resolve issue with pylab.show
@@ -119,6 +120,7 @@ class testAnalysis():
         
     def parse_and_go(self, argsin = None):
         global period
+        global binsize
         parser=OptionParser() # command line options
         ##### parses all of the options inputted at the command line TFR 11/13/2015
         parser.add_option("-u", "--upfile", dest="upfile", metavar='FILE',
@@ -139,10 +141,49 @@ class testAnalysis():
                           help = "gaussian filter width")
         parser.add_option("-f", '--fdict', dest = "fdict", default=0, type="int",
                           help = "Use dictionary entry")
+        
         if argsin is not None:
             (options, args) = parser.parse_args(argsin)
         else:
             (options, args) = parser.parse_args()
+
+        if options.test is True:
+            print "Running Test Sample"
+            period = 8.0 # period and frame sample rate can be different
+            framerate = 8.0
+            nper = 1
+            d = 10.0*numpy.random.normal(size=(2500,128,128)).astype('float32')
+            ds = d.shape
+            self.nFrames = d.shape[0]
+            self.nPhases = 10
+            maxdel = 50
+            self.phasex = []
+            self.phasey = []
+            for i in range(0,self.nPhases):
+                dx = i*ds[1]/self.nPhases # each phase is assigned to a region
+                baseline = 0.0
+                self.resp = numpy.zeros((self.nFrames,))
+                phaseDelay = 0.25*period+period*(float(i)/self.nPhases) # phase delay for this region from 0 to nearly the stimulus repeat period
+               # print '********phase delay: ', phaseDelay
+                for j in range(0, nper): # for each period 
+                    tdelay = (float(j) * period) + phaseDelay # time to phase delay point
+                    idelay = int(numpy.floor(tdelay*framerate)) # convert to frame position in frame space
+               #     print '     tdel: ', tdelay, '    idel: ', idelay
+                #    if idelay < self.nFrames-maxdel:
+                #        self.resp[idelay:idelay+maxdel] = (i+1)*numpy.exp(-numpy.linspace(0, 2, maxdel)) # marks amplitudes as well
+                self.resp = 50.0*numpy.sin(
+                         numpy.linspace(0, 2.0*numpy.pi*self.nFrames/(period*framerate), self.nFrames)+i*numpy.pi/8.0 - numpy.pi/2.0)
+                d[:, dx:dx+int(ds[1]/self.nPhases), 5:int(ds[2]/2)] += self.resp[:, numpy.newaxis, numpy.newaxis]
+                self.phasex.append( (2+(dx+int(ds[1]/self.nPhases))/2))
+                self.phasey.append((6+int(ds[2]/2)/2)) # make the signal equivalent of digitized one (baseline 3000, signal at 1e-4 of baseline)
+            d = (d*3000.0*1e-4)+3000.0 # scale and offset to match data scaling coming in
+            self.imageData = d.astype('int16') # reduce to a 16-bit map to match camera data type
+            self.times = numpy.arange(0, self.nFrames/framerate, 1.0/framerate)
+            print "Test Image Created"
+            self.Analysis_FourierMap_TFR(period=period, target = 1, mode=1, bins=binsize)
+            print "Completed Analysis FourierMap"
+            self.plotmaps_pg(mode = 2, gfilter = gfilt)
+            print "Completed plot maps"
 
         if options.period is not None:
             measuredPeriod = options.period
@@ -279,7 +320,7 @@ class testAnalysis():
         if target > 0:
             self.plotmaps_pg(mode = 1, target = target, gfilter = gfilt)
 
-
+        return
 
     def subtract_Background(self, diffup=0.005):
         #loading background data
@@ -340,7 +381,7 @@ class testAnalysis():
         self.imagePeriod = 0
         # if HAVE_MPL:
         #     pylab.figure(2)
-        self.imageData = self.imageData.squeeze()
+        #self.imageData = self.imageData.squeeze()
  
 #         print "now calculating mean"
 #         # excluding bad trials
@@ -364,7 +405,9 @@ class testAnalysis():
 #         # calculate FFT and get amplitude and phase
 #         self.DF = numpy.fft.fft(D, axis = 0)
         #self.reshapeImage()
-        self.DF = numpy.fft.fft(self.imageData, axis = 0)
+        D=numpy.mean(self.imageData, axis = 0)
+        print 'shape of D', D.shape
+        self.DF = numpy.fft.fft(D, axis = 0)
         ampimg = numpy.abs(self.DF[1,:,:]).astype('float32')
         phaseimg = numpy.angle(self.DF[1,:,:]).astype('float32')
         if target == 1:
@@ -480,8 +523,8 @@ class testAnalysis():
 # plot data
     def plotmaps_pg(self, mode = 0, target = 1, gfilter = 0):
 
-        pos = np.array([0.0, 0.5, 1.0])
-        color = np.array([[0,0,0,255], [255,128,0,255], [255,255,0,255]], dtype=np.ubyte)
+        pos = np.array([0.0, 0.33, 0.67, 1.0])
+        color = np.array([[0,0,0,255], [255,128,0,255], [255,255,0,255],[0,0,0,255]], dtype=np.ubyte)
         maps = pg.ColorMap(pos, color)
         lut = maps.getLookupTable(0.0, 1.0, 256)
         # # ## Set up plots/images in window
@@ -509,139 +552,131 @@ class testAnalysis():
         # #scipy.ndimage.gaussian_filter(self.amplitudeImage1, 2, order=0, output=self.amplitudeImage1, mode='reflect')
         ampimg = scipy.ndimage.gaussian_filter(self.amplitudeImage1,gfilt, order=0, mode='reflect')
         #self.amp1View.addItem(pg.ImageItem(ampimg))
-        # self.amp1 = pg.image(ampimg, title="Amplitude Map 1", levels=(0.0, max1))
-        # #imga1 = pylab.imshow(ampimg)
-        # #pylab.colorbar()
-        # #imga1.set_clim = (0.0, max1)
-        # #pylab.subplot(2,3,4)
-        # #pylab.title('Phase Map1')
-        # phsmap=scipy.ndimage.gaussian_filter(self.phaseImage1, gfilt, order=0,mode='reflect')
-        # #self.phase1View.addItem(pg.ImageItem(phsmap))
-        # self.phs1 = pg.image(phsmap, title='Phase Map 1')
-        # #self.phs1.getHistogramWidget().item.gradient.
-        # #imgp1 = pylab.imshow(phsmap, cmap=matplotlib.cm.hsv)
-        # #pylab.colorbar()
+        self.amp1 = pg.image(ampimg, title="Amplitude Map 1", levels=(0.0, max1))
+        #imga1 = pylab.imshow(ampimg)
+        #pylab.colorbar()
+        #imga1.set_clim = (0.0, max1)
+        #pylab.subplot(2,3,4)
+        #pylab.title('Phase Map1')
+        phsmap=scipy.ndimage.gaussian_filter(self.phaseImage1, gfilt, order=0,mode='reflect')
+        #self.phase1View.addItem(pg.ImageItem(phsmap))
+        self.phs1 = pg.image(phsmap, title='Phase Map 1')
+        #self.phs1.getHistogramWidget().item.gradient.
+        #imgp1 = pylab.imshow(phsmap, cmap=matplotlib.cm.hsv)
+        #pylab.colorbar()
 
-        # print "plotmaps Block 1"
-        # print "mode:", mode
-        # self.wavePlt = pg.plot(title='Waveforms')
-        # if mode == 0 or mode == 2:
-        #     self.fftPlt = pg.plot(title = 'FFTs')
+        print "plotmaps Block 1"
+        print "mode:", mode
+        self.wavePlt = pg.plot(title='Waveforms')
+        if mode == 0 or mode == 2:
+            self.fftPlt = pg.plot(title = 'FFTs')
         
-        # if mode == 0:
-        #     #pylab.subplot(2,3,3)
+        if mode == 0:
+            #pylab.subplot(2,3,3)
 
-        #     # for i in range(0, self.nPhases):
-        #     #     self.wavePlt.plot(ta.n_times, D[:,5,5].view(ndarray))
-        #     #     #pylab.plot(ta.n_times, D[:,5,5].view(ndarray))
-        #     #     #pylab.plot(self.n_times, D[:,i*55+20, 60])
-        #     #     #pylab.hold('on')
-        #     # #pylab.title('Waveforms')
+            # for i in range(0, self.nPhases):
+            #     self.wavePlt.plot(ta.n_times, D[:,5,5].view(ndarray))
+            #     #pylab.plot(ta.n_times, D[:,5,5].view(ndarray))
+            #     #pylab.plot(self.n_times, D[:,i*55+20, 60])
+            #     #pylab.hold('on')
+            # #pylab.title('Waveforms')
 
-        #     #pylab.subplot(2,3,6)
-        #     for i in range(0, self.nPhases):
-        #         self.fftPlt.plot(ta.n_times, self.DF[:,5,5].view(ndarray))
-        #         #pylab.plot(ta.n_times, self.DF[:,5,5].view(ndarray))
-        #         #pylab.plot(self.DF[:,i*55+20, 60])
-        #         #pylab.hold('on')
-        #     #pylab.title('FFTs')
+            #pylab.subplot(2,3,6)
+            for i in range(0, self.nPhases):
+                self.fftPlt.plot(ta.n_times, self.DF[:,5,5].view(ndarray))
+                #pylab.plot(ta.n_times, self.DF[:,5,5].view(ndarray))
+                #pylab.plot(self.DF[:,i*55+20, 60])
+                #pylab.hold('on')
+            #pylab.title('FFTs')
 
-        # print "plotmaps Block 2"
+        print "plotmaps Block 2"
 
-        # if mode == 1 and target > 1:
-        #     #pylab.subplot(2,3,2)
-        #     #pylab.title('Amplitude Map2')
-        #     #scipy.ndimage.gaussian_filter(self.amplitudeImage2, 2, order=0, output=self.amplitudeImage2, mode='reflect')
-        #     ampImg2 = scipy.ndimage.gaussian_filter(self.amplitudeImage2,gfilt, order=0, mode='reflect')
-        #     #imga2 = pylab.imshow(ampImg2)
-        #     #self.amp2View.addItem(pg.ImageItem(ampImg2))
-        #     self.amp2 = pg.image(ampImg2, title='Amplitude Map 2', levels=(0.0, max1))
-        #     #imga2.set_clim = (0.0, max1)
-        #     #pylab.colorbar()
-        #     #pylab.subplot(2,3,5)
-        #     phaseImg2 = scipy.ndimage.gaussian_filter(self.phaseImage2, gfilt, order=0,mode='reflect') 
-        #     #self.phase2View.addItem(pg.ImageItem(phaseImg2))
-        #     self.phs2 = pg.image(phaseImg2, title="Phase Map 2", levels=(-np.pi/2.0, np.pi/2.0))
-        #     #imgp2 = pylab.imshow(phaseImg2, cmap=matplotlib.cm.hsv)
-        #     #pylab.colorbar()
+        if mode == 1 and target > 1:
+            #pylab.subplot(2,3,2)
+            #pylab.title('Amplitude Map2')
+            #scipy.ndimage.gaussian_filter(self.amplitudeImage2, 2, order=0, output=self.amplitudeImage2, mode='reflect')
+            ampImg2 = scipy.ndimage.gaussian_filter(self.amplitudeImage2,gfilt, order=0, mode='reflect')
+            #imga2 = pylab.imshow(ampImg2)
+            #self.amp2View.addItem(pg.ImageItem(ampImg2))
+            self.amp2 = pg.image(ampImg2, title='Amplitude Map 2', levels=(0.0, max1))
+            #imga2.set_clim = (0.0, max1)
+            #pylab.colorbar()
+            #pylab.subplot(2,3,5)
+            phaseImg2 = scipy.ndimage.gaussian_filter(self.phaseImage2, gfilt, order=0,mode='reflect') 
+            #self.phase2View.addItem(pg.ImageItem(phaseImg2))
+            self.phs2 = pg.image(phaseImg2, title="Phase Map 2", levels=(-np.pi/2.0, np.pi/2.0))
+            #imgp2 = pylab.imshow(phaseImg2, cmap=matplotlib.cm.hsv)
+            #pylab.colorbar()
             #imgp2.set_clim=(-numpy.pi/2.0, numpy.pi/2.0)
             #pylab.title('Phase Map2')
             ### doubled phase map
             #pylab.subplot(2,3,6)
             #scipy.ndimage.gaussian_filter(self.phaseImage2, 2, order=0, output=self.phaseImage2, mode='reflect')
-        np1 = scipy.ndimage.gaussian_filter(self.phaseImage1, gfilt, order=0, mode='reflect')
-        np2 = scipy.ndimage.gaussian_filter(self.phaseImage2, gfilt, order=0, mode='reflect')
-        dphase = np1 + np2
-        print 'shape of dphase', dphase.shape
-        #dphase = self.phaseImage1 - self.phaseImage2
-        print 'min phase', np.amin(dphase)
-        print 'max phase', np.amax(dphase)
-        for i in range(dphase.shape[0]):
-            for j in range(dphase.shape[1]):
-                for k in range(dphase.shape[2]):
-                    if dphase[i,j,k]<0:
-                        dphase[i,j,k] = dphase[i,j,k]+2*np.pi
+            np1 = scipy.ndimage.gaussian_filter(self.phaseImage1, gfilt, order=0, mode='reflect')
+            np2 = scipy.ndimage.gaussian_filter(self.phaseImage2, gfilt, order=0, mode='reflect')
+            dphase = np1 + np2
+            print 'shape of dphase', dphase.shape
+            #dphase = self.phaseImage1 - self.phaseImage2
+            print 'min phase', np.amin(dphase)
+            print 'max phase', np.amax(dphase)
+            for i in range(dphase.shape[0]):
+                for j in range(dphase.shape[1]):
+                    #for k in range(dphase.shape[2]):
+                    if dphase[i,j]<0:
+                        dphase[i,j] = dphase[i,j]+2*np.pi
 
-        print 'min phase', np.amin(dphase)
-        print 'max phase', np.amax(dphase)
-        
-        self.win = pg.GraphicsWindow()
-        view = self.win.addViewBox()
-        view.setAspectLocked(True)
-        item = pg.ImageItem(dphase)
-        view.addItem(item)
-        item.setLookupTable(lut)
-        item.setLevels([0,2*np.pi])
-        gradlegend = pg.GradientLegend((10,100),(0,0))
-        gradlegend.setIntColorScale(np.amin(lut),np.amax(lut))
-        view.addItem(gradlegend)
+            print 'min phase', np.amin(dphase)
+            print 'max phase', np.amax(dphase)
+            
+            self.win = pg.GraphicsWindow()
+            view = self.win.addViewBox()
+            view.setAspectLocked(True)
+            item = pg.ImageItem(dphase)
+            view.addItem(item)
+            item.setLookupTable(lut)
+            item.setLevels([0,2*np.pi])
+
+            # self.colorlevels = pg.GradientEditorItem()
+            # self.colorlevels.getLookupTable(17)
+            # self.colorlevels.setColorMode('rgb')
+            # self.colorlevels.setOrientation('right')
+            # self.colorlevels.setPos(-10,0)
+            # view.addItem(self.colorlevels)
+            gradlegend = pg.GradientLegend((10,100),(0,0))
+            #gradlegend.setIntColorScale(0,255)
+            #gradlegend.setGradient(self.creategradient())
+            gradlegend.setGradient(maps.getGradient())
+            view.addItem(gradlegend)
             #self.phiView.addItem(pg.ImageItem(dphase))
-            #self.phi = pg.image(dphase, title="2x Phi map", levels=(-2*np.pi, 2*np.pi))
+            self.phi = pg.image(dphase, title="2x Phi map", levels=(0, 2*np.pi))
             
             #imgpdouble = pylab.imshow(dphase, cmap=matplotlib.cm.hsv)
             #pylab.title('2x Phi map')
             #pylab.colorbar()
             #imgpdouble.set_clim=(-numpy.pi, numpy.pi)
 
-        # print "plotmaps Block 3"
+        print "plotmaps Block 3"
 
-        # # if mode == 2 or mode == 1:
-        # #     # if self.phasex == []:
-        # #     #     self.phasex = numpy.random.randint(0, high=D.shape[1], size=D.shape[1])
-        # #     #     self.phasey = numpy.random.randint(0, high=D.shape[2], size=D.shape[2])
+        # if mode == 2 or mode == 1:
+        #     # if self.phasex == []:
+        #     #     self.phasex = numpy.random.randint(0, high=D.shape[1], size=D.shape[1])
+        #     #     self.phasey = numpy.random.randint(0, high=D.shape[2], size=D.shape[2])
 
-        # #     #pylab.subplot(2,3,3)
-        # #     sh = D.shape
-        # #     spr = sh[2]/self.nPhases
-        # #     wvfms=[]
-        # #     for i in range(0, self.nPhases):
-        # #         Dm = self.avgimg[i*spr,i*spr] # diagonal run
-        # #         wvfms=self.n_times, 100.0*(D[:,self.phasex[i], self.phasey[i]]/Dm)
-        # #         #pylab.plot(self.n_times, 100.0*(D[:,self.phasex[i], self.phasey[i]]/Dm))
-        # #         self.wavePlt.plot(self.n_times, 100.0*(D[:,self.phasex[i], self.phasey[i]]/Dm))
-        # #         #pylab.hold('on')
-        #         #self.plotlist.append(pg.image(wvfms, title="Waveforms"))
-        #         #print "it worked"
-        #     #pylab.title('Waveforms')
+        #     #pylab.subplot(2,3,3)
+        #     sh = D.shape
+        #     spr = sh[2]/self.nPhases
+        #     wvfms=[]
+        #     for i in range(0, self.nPhases):
+        #         Dm = self.avgimg[i*spr,i*spr] # diagonal run
+        #         wvfms=self.n_times, 100.0*(D[:,self.phasex[i], self.phasey[i]]/Dm)
+        #         #pylab.plot(self.n_times, 100.0*(D[:,self.phasex[i], self.phasey[i]]/Dm))
+        #         self.wavePlt.plot(self.n_times, 100.0*(D[:,self.phasex[i], self.phasey[i]]/Dm))
+        #         #pylab.hold('on')
+        #         self.plotlist.append(pg.image(wvfms, title="Waveforms"))
+        #         print "it worked"
+        #     pylab.title('Waveforms')
 
         # print "plotmaps Block 4"
-
-        # if mode == 2:
-        #     #pylab.subplot(2,3,6)
-        #     for i in range(0, self.nPhases):
-        #         #pylab.plot(self.DF[1:,80, 80])
-        #         spectrum = np.abs(self.DF)**2
-        #         self.fftPlt.plot(spectrum[1:,80,80])
-        #         #pyqtgraph.intColor(index, hues=17, values=1, maxValue=255, minValue=150, maxHue=360, minHue=0, sat=255, alpha=255, **kargs)
-                
-        #         #self.fftPlt.plot(self.DF[1:,80,80]) ## causing errors and i'm not sure what the desired thing is, Exception: Can not plot complex data types.
-        #         #pass
-        #         #pylab.hold('on')
-                #self.plotlist.append(pg.image(wvfms, title="Waveforms"))
-                #print "it worked"
-            #pylab.title('Waveforms')
-
-        print "plotmaps Block 4"
 
         if mode == 2:
             #pylab.subplot(2,3,6)
@@ -654,13 +689,37 @@ class testAnalysis():
                 #self.fftPlt.plot(self.DF[1:,80,80]) ## causing errors and i'm not sure what the desired thing is, Exception: Can not plot complex data types.
                 #pass
                 #pylab.hold('on')
-            #pylab.title('FFTs')
+                self.plotlist.append(pg.image(wvfms, title="Waveforms"))
+                print "waveform plotting worked"
+            # pylab.title('Waveforms')
+
+        print "plotmaps Block 4"
+
+        # if mode == 2:
+        #     #pylab.subplot(2,3,6)
+        #     for i in range(0, self.nPhases):
+        #         #pylab.plot(self.DF[1:,80, 80])
+        #         spectrum = np.abs(self.DF)**2
+        #         self.fftPlt.plot(spectrum[1:,80,80])
+        #         #pyqtgraph.intColor(index, hues=17, values=1, maxValue=255, minValue=150, maxHue=360, minHue=0, sat=255, alpha=255, **kargs)
+                
+        #         #self.fftPlt.plot(self.DF[1:,80,80]) ## causing errors and i'm not sure what the desired thing is, Exception: Can not plot complex data types.
+        #         #pass
+        #         #pylab.hold('on')
+        #     #pylab.title('FFTs')
         
-        print "plotmaps Block 5"
-        print "plotting complete"
+        # print "plotmaps Block 5"
+        # print "plotting complete"
         return
         #pylab.show()
         #self.view.show()
+
+    def creategradient(self):
+        g = QtGui.QLinearGradient()
+        for i in range(17):
+            g.setColorAt(float(i)/17.0, pg.intColor(i, hues=17))
+
+        return g
 
     def meanxy(self, indata, n, m):
         """ compute a mean in the xy plane of indata, over an area nxm
