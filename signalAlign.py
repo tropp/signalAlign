@@ -81,10 +81,16 @@ print 'fl:', fl
 # Keys are first file #. Data are file name (up, down), wavelength, attn, period, date, frequency list, comment
 DB = {11: ('011', '013', 610, 20.0, 4.25, '08Jan16', fl, 'thinned skull')}
 DB[19] = ('019','018', 610, 15.0, 4.25, '13Jan16', fl, 'thinned skull')
-DB[4] = ('004','002', 610, 20.0, 4.25, '13Jan16', fl, 'thinned skull')
+#DB[4] = ('004','002', 610, 20.0, 4.25, '13Jan16', fl, 'thinned skull')
 DB[5] =  ('005','003',610, 20.0, 4.25, '13Jan16', fl, 'thinned skull')
-DB[7] = ('007', '008', 610, 120.0, 4.25, '13Jan16', fl, 'thinned skull')
+#DB[7] = ('007', '008', 610, 120.0, 4.25, '13Jan16', fl, 'thinned skull')
 DB[12] = ('012', '011', 610, 120.0, 4.25, '13Jan16', fl, 'thinned skull') #sound unplugged
+DB[4] = ('004','005', 610, 20.0, 4.25, '01Feb16', fl, 'thinned skull')
+DB[7] = ('007','008', 610, 20.0, 4.25, '01Feb16', fl, 'thinned skull')
+DB[3] = ('003','002', 610, 20.0, 4.25, '01Feb16', fl, 'thinned skull')
+DB[20] = ('020','019', 610, 30.0, 4.25, '01Feb16', fl, 'thinned skull')# noise for 12.75 seconds
+DB[21] = ('021','018', 610, 30.0, 4.25, '01Feb16', fl, 'thinned skull')# noise for 12.75 seconds
+DB[11] = ('011','012', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
 
 # # Timestamps.  Keys are first file number.  Data are videoup, audioup, videodown, audiodown start times
 # timestamp = {11: (1452278712.382, 1452278713.787, 1452278790.432, 1452278791.642)}
@@ -96,9 +102,17 @@ DB[12] = ('012', '011', 610, 120.0, 4.25, '13Jan16', fl, 'thinned skull') #sound
            
 
 homedir = os.getenv('HOME')
-videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.01.13_000/video_'
-basepath = '/Volumes/TRoppData/data/Intrinsic/2016.01.13_000/'
-audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.01.13_000/Sound_Stimulation_video_'
+videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/Second_round/video_'
+basepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/Second_round/'
+audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/Second_round/Sound_Stimulation_video_'
+###  Don't forget to change the backgrounf file!
+
+# videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/First_round/video_'
+# basepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/First_round/'
+# audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/First_round/Sound_Stimulation_video_'
+# videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.01.13_000/video_'
+# basepath = '/Volumes/TRoppData/data/Intrinsic/2016.01.13_000/'
+# audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.01.13_000/Sound_Stimulation_video_'
 # videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.01.08_000/Intrinsic_Mapping/video_'
 # basepath = '/Volumes/TRoppData/data/Intrinsic/2016.01.08_000/Intrinsic_Mapping/'
 # audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.01.08_000/Intrinsic_Mapping/Sound_Stimulation_video_'
@@ -171,7 +185,7 @@ class testAnalysis():
                #     print '     tdel: ', tdelay, '    idel: ', idelay
                 #    if idelay < self.nFrames-maxdel:
                 #        self.resp[idelay:idelay+maxdel] = (i+1)*numpy.exp(-numpy.linspace(0, 2, maxdel)) # marks amplitudes as well
-                self.resp = 50.0*numpy.sin(
+                self.resp = 1000.0*numpy.sin(
                          numpy.linspace(0, 2.0*numpy.pi*self.nFrames/(period*framerate), self.nFrames)+i*numpy.pi/8.0 - numpy.pi/2.0)
                 d[:, dx:dx+int(ds[1]/self.nPhases), 5:int(ds[2]/2)] += self.resp[:, numpy.newaxis, numpy.newaxis]
                 self.phasex.append( (2+(dx+int(ds[1]/self.nPhases))/2))
@@ -180,9 +194,11 @@ class testAnalysis():
             self.imageData = d.astype('int16') # reduce to a 16-bit map to match camera data type
             self.times = numpy.arange(0, self.nFrames/framerate, 1.0/framerate)
             print "Test Image Created"
+            getout2 = fac_lift(self.imageData, self.times)
+            self.imageData=getout2
             self.Analysis_FourierMap_TFR(period=period, target = 1, mode=1, bins=binsize)
             print "Completed Analysis FourierMap"
-            self.plotmaps_pg(mode = 2, gfilter = gfilt)
+            self.plotmaps_pg(mode = 2, gfilter = 0)
             print "Completed plot maps"
 
         if options.period is not None:
@@ -325,8 +341,10 @@ class testAnalysis():
     def subtract_Background(self, diffup=0.005):
         #loading background data
         print 'running subtractBackground'
-        bckfile = videobasepath + '011.ma'
-        bckaudio = audiobasepath + '011/DaqDevice.ma'
+        bckfile = videobasepath + '005.ma'
+        bckaudio = audiobasepath + '005/DaqDevice.ma'
+        # bckfile = videobasepath + '011.ma'
+        # bckaudio = audiobasepath + '011/DaqDevice.ma'
         
         try:
             im = MetaArray(file = bckfile,  subset=(slice(0,2), slice(64,128), slice(64,128)))
@@ -689,7 +707,7 @@ class testAnalysis():
                 #self.fftPlt.plot(self.DF[1:,80,80]) ## causing errors and i'm not sure what the desired thing is, Exception: Can not plot complex data types.
                 #pass
                 #pylab.hold('on')
-                self.plotlist.append(pg.image(wvfms, title="Waveforms"))
+                # self.plotlist.append(pg.image(wvfms, title="Waveforms"))
                 print "waveform plotting worked"
             # pylab.title('Waveforms')
 
