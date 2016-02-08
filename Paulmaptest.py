@@ -118,7 +118,7 @@ homedir = os.getenv('HOME')
 workingpath = 'Desktop/IntrinsicImaging/video_'
 basepath = os.path.join(homedir, workingpath)
 #basepath = '/Volumes/Promise Pegasus/ManisLab_Data3/IntrinsicImaging/'
-basepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.05_000/slice_000/video_'
+basepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.05_000/slice_002/video_'
 
 class testAnalysis():
     def __init__(self):
@@ -264,7 +264,7 @@ class testAnalysis():
                upflag = 0
             self.Analysis_FourierMap(period=measuredPeriod, target = target,  bins=binsize, up=upflag)
         if target > 0:
-            self.plotmaps_pg(mode = 1, target = target, gfilter = gfilt)
+            self.plotmaps(mode = 1, target = target, gfilter = gfilt)
 
     def Analysis_FourierMap(self, period = 8.0, target = 1, mode=0, bins = 1, up=1):
         global D
@@ -336,7 +336,7 @@ class testAnalysis():
         #               black is after averaged signal over space is subtracted over time
         #               red is after both corrections (boxcar and time acverage)
         zid = self.imageData[:,ipx,ipy]-self.timeavg
-        pg.image(zid, title='subtracted area')
+        print 'size of zid', np.shape(zid)
         mta = scipy.signal.detrend(self.timeavg)
         mtaa = numpy.mean(mta, axis=0)
         stdta = numpy.std(mta)
