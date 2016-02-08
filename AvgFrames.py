@@ -80,7 +80,7 @@ print 'fl:', fl
 
 # Keys are first file #. Data are file name (up, down), wavelength, attn, period, date, frequency list, comment
 DB = {0: ('000', '003', 610,50.0, 4.25, '05Feb16', fl, 'thinned skull')}
-DB[1] = ('001','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[1] = ('001','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
 DB[2] = ('002','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
 DB[3] = ('003','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
 DB[4] = ('004','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
@@ -288,17 +288,21 @@ class testAnalysis():
         print 'audiomax', audiomax
 
         adjustedtime = rawtimes[np.logical_and(rawtimes <= audiomax+.5, rawtimes >= audiomin)]
-        
-        adjustedimagedata = rawimageData[np.logical_and(rawtimes <= audiomax+.5, rawtimes >= audiomin)]
+        frame_start=np.amin(np.where(rawtimes >= audiomin))
+        frame_end=np.amax(np.where(rawtimes <= audiomax+0.5))
+        adjustedimagedata = rawimageData[frame_start:frame_end]
+        #adjustedimagedata = rawimageData[np.logical_and(rawtimes <= audiomax+.5, rawtimes >= audiomin)]
  
         self.times = [x-np.min(adjustedtime) for x in adjustedtime]
         self.imageData = adjustedimagedata
         # self.imageData=np.mean(self.imageData, axis=0)
-        self.imageData=self.imageData.mean()
+        self.imageData=np.mean(self.imageData)
 
         # for background file
         im2=[]
         self.imageData2 = []
+        adjustedimagedata = []
+
         print "loading data from ", videodwnf
         try:
             im2 = MetaArray(file = videodwnf,  subset=(slice(0,2), slice(64,128), slice(64,128)))
@@ -335,18 +339,23 @@ class testAnalysis():
         print 'audiomax', audiomax
 
         adjustedtime = rawtimes[np.logical_and(rawtimes <= audiomax+.5, rawtimes >= audiomin)]
-        
-        adjustedimagedata = rawimageData[np.logical_and(rawtimes <= audiomax+.5, rawtimes >= audiomin)]
+        frame_start=np.amin(np.where(rawtimes >= audiomin))
+        frame_end=np.amax(np.where(rawtimes <= audiomax+0.5))
+        adjustedimagedata = rawimageData[frame_start:frame_end]
  
         self.times = [x-np.min(adjustedtime) for x in adjustedtime]
         self.imageData2 = adjustedimagedata
-        self.imageData2=self.imageData2.mean()
+        self.imageData2=np.mean(self.imageData2, axis=0)
         print 'size of imagedata', self.imageData2.shape
         diffframes = self.imageData/self.imageData2
+        print 'mean:', diffframes.mean()
+        print 'std:', diffframes.std()
         procimage=diffframes/diffframes.mean()/diffframes.std()
 
-
         self.avgframes = pg.image(diffframes, title='Average across frames')
+        self.diff_frames = pg.image(procimage, title='Normalized Average across frames')
+        self.imagebck=pg.image(rawimageData[10])
+        #self.avgframes = pg.image(procimage, title='Average across frames')
         return
 
     def subtract_Background(self, diffup=0.005):
