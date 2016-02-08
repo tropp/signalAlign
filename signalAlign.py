@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+ #!/usr/bin/env python
 """
 maptest.py: Compute phase maps from streams of images.
 Algorithm:
@@ -90,10 +90,19 @@ DB[7] = ('007','008', 610, 20.0, 4.25, '01Feb16', fl, 'thinned skull')
 DB[3] = ('003','002', 610, 20.0, 4.25, '01Feb16', fl, 'thinned skull')
 DB[20] = ('020','019', 610, 30.0, 4.25, '01Feb16', fl, 'thinned skull')# noise for 12.75 seconds
 DB[21] = ('021','018', 610, 30.0, 4.25, '01Feb16', fl, 'thinned skull')# noise for 12.75 seconds
+
+DB[12] = ('011','012', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
+DB[10] = ('010','013', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
+DB[9] = ('009','014', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
+DB[8] = ('008','015', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
+DB[7] = ('007','016', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
+DB[27] = ('027','024', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
+
 DB[11] = ('011','012', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
 DB[5] = ('005','002', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
 DB[18] = ('018','015', 610, 5.0, 4.25, '05Feb16', fl, 'thinned skull')
 DB[19] = ('019','014', 610, 5.0, 4.25, '05Feb16', fl, 'thinned skull')
+r
 # # Timestamps.  Keys are first file number.  Data are videoup, audioup, videodown, audiodown start times
 # timestamp = {11: (1452278712.382, 1452278713.787, 1452278790.432, 1452278791.642)}
 # timestamp[19] =  (1452713884.635, 1452713885.25, 1452713843.612, 1452713844.84)
@@ -346,8 +355,10 @@ class testAnalysis():
     def subtract_Background(self, diffup=0.005):
         #loading background data
         print 'running subtractBackground'
+
         bckfile = videobasepath + '008.ma'
         bckaudio = audiobasepath + '008/DaqDevice.ma'
+
         # bckfile = videobasepath + '011.ma'
         # bckaudio = audiobasepath + '011/DaqDevice.ma'
         
