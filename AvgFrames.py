@@ -1,4 +1,4 @@
- #!/usr/bin/env python
+#!/usr/bin/env python
 """
 maptest.py: Compute phase maps from streams of images.
 Algorithm:
@@ -79,30 +79,22 @@ fl = [3000*x for x in freqlist]
 print 'fl:', fl
 
 # Keys are first file #. Data are file name (up, down), wavelength, attn, period, date, frequency list, comment
-DB = {11: ('011', '013', 610, 20.0, 4.25, '08Jan16', fl, 'thinned skull')}
-#DB[19] = ('019','018', 610, 15.0, 4.25, '13Jan16', fl, 'thinned skull')
-#DB[4] = ('004','002', 610, 20.0, 4.25, '13Jan16', fl, 'thinned skull')
-DB[5] =  ('005','003',610, 20.0, 4.25, '13Jan16', fl, 'thinned skull')
-#DB[7] = ('007', '008', 610, 120.0, 4.25, '13Jan16', fl, 'thinned skull')
-DB[12] = ('012', '011', 610, 120.0, 4.25, '13Jan16', fl, 'thinned skull') #sound unplugged
-DB[4] = ('004','005', 610, 20.0, 4.25, '01Feb16', fl, 'thinned skull')
-DB[7] = ('007','008', 610, 20.0, 4.25, '01Feb16', fl, 'thinned skull')
-DB[3] = ('003','002', 610, 20.0, 4.25, '01Feb16', fl, 'thinned skull')
-DB[20] = ('020','019', 610, 30.0, 4.25, '01Feb16', fl, 'thinned skull')# noise for 12.75 seconds
-DB[21] = ('021','018', 610, 30.0, 4.25, '01Feb16', fl, 'thinned skull')# noise for 12.75 seconds
-<<<<<<< HEAD
-DB[12] = ('011','012', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
-DB[10] = ('010','013', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
-DB[9] = ('009','014', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
-DB[8] = ('008','015', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
-DB[7] = ('007','016', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
-DB[27] = ('027','024', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
-=======
-DB[11] = ('011','012', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
-DB[5] = ('005','002', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
-DB[18] = ('018','015', 610, 5.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[19] = ('019','014', 610, 5.0, 4.25, '05Feb16', fl, 'thinned skull')
->>>>>>> refs/remotes/origin/master
+DB = {0: ('000', '003', 610,50.0, 4.25, '05Feb16', fl, 'thinned skull')}
+DB[1] = ('001','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[2] = ('002','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[3] = ('003','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[4] = ('004','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[5] = ('005','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[6] = ('006','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[7] = ('007','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[8] = ('008','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[9] = ('009','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[10] = ('010','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[11] = ('011','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[12]= ('012','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[13] = ('013','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+
+
 # # Timestamps.  Keys are first file number.  Data are videoup, audioup, videodown, audiodown start times
 # timestamp = {11: (1452278712.382, 1452278713.787, 1452278790.432, 1452278791.642)}
 # timestamp[19] =  (1452713884.635, 1452713885.25, 1452713843.612, 1452713844.84)
@@ -223,19 +215,6 @@ class testAnalysis():
             binsize = options.binsize
         if options.gfilt is not None:
             gfilt = options.gfilt
-
-        print 'DB keys', DB.keys()
-        if options.fdict is not None:
-            if options.fdict in DB.keys(): # populate options 
-                options.upfile = DB[options.fdict][0]
-                options.downfile = DB[options.fdict][1]
-                options.period = DB[options.fdict][4]
-            else:
-               print "File %d NOT in DBase\n" % options.fdict
-               return
-        if options.directory is not None:
-            self.directory = options.directory
-
         if options.upfile is not None:
             self.upfile = options.upfile
             target = 1
@@ -250,6 +229,19 @@ class testAnalysis():
         audioupf = None
         audiodwnf = None
 
+        
+        print 'DB keys', DB.keys()
+        if options.fdict is not None:
+            if options.fdict in DB.keys(): # populate options 
+                options.upfile = DB[options.fdict][0]
+                options.downfile = DB[options.fdict][1]
+                options.period = DB[options.fdict][4]
+            else:
+               print "File %d NOT in DBase\n" % options.fdict
+               return
+        if options.directory is not None:
+            self.directory = options.directory
+
         if options.upfile is not None:
             videoupf = videobasepath + options.upfile + '.ma'
             audioupf = audiobasepath + options.upfile + '/DaqDevice.ma'
@@ -257,108 +249,111 @@ class testAnalysis():
             videodwnf = videobasepath + options.downfile + '.ma'
             audiodwnf = audiobasepath + options.downfile + '/DaqDevice.ma'
 
-        # indexFile = configfile.readConfigFile(basepath+'.index') 
-        # time = indexFile.__getitem__('video_019.ma')[u'__timestamp__'] 
+        
+        im=[]
+        self.imageData = []
+        print "loading data from ", videoupf
+        try:
+            im = MetaArray(file = videoupf,  subset=(slice(0,2), slice(64,128), slice(64,128)))
+        except:
+            print "Error loading upfile: %s\n" % videoupf
+            return
+        print "data loaded"
+        
+         
+        rawtimes=[]
+        rawimageData=[]
+        rawtimes = im.axisValues('Time').astype('float32')
 
-        #indexFile = configfile.readConfigFile(basepath+'.index') 
-        #print 'indexfile', indexfile
-        for file in (videoupf, videodwnf):
-#if options.upfile is not None and options.downfile is not None:
-            if file is None:
-               break
-            im=[]
-            self.imageData = []
-            print "loading data from ", file
-            try:
-                im = MetaArray(file = file,  subset=(slice(0,2), slice(64,128), slice(64,128)))
-            except:
-                print "Error loading upfile: %s\n" % file
-                return
-            print "data loaded"
-            target = target + 1
-            # dir = acq4.util.DataManager.getHandle(basepath)
-            # time = dir.info()['__timestamp__']
-            # print 'time:', time
-           #print 'im:', im
-            # dir(im)
-            rawtimes=[]
-            rawimageData=[]
-            rawtimes = im.axisValues('Time').astype('float32')
-#            print 'time', rawtimes
-            rawimageData = im.view(np.ndarray).astype('float32')
-#            print 'shape of ra image data:', rawimageData.shape
-            ## videobasepath = /......./2016.10.08_000/Intrinsic_Mapping/video_'
-            ## indexFile = configFile.readConfigFile('/...../2016.10.08_000/Intrinsic_Mapping/.index') -> a dictionary
+        rawimageData = im.view(np.ndarray).astype('float32')
+#  
 
-            # dir = acq4.util.DataManager.getHandle(videoupf)
-            # time = dir.info()['__timestamp__']
-            
-            # #timestampup = timestamp[options.fdict][0]
-            # audioupstamp = timestamp[options.fdict][1]
-            # #timestampdown = timestamp[options.fdict][2]
-            # audiodownstamp = timestamp[options.fdict][3]
-            # #print 'optioins.dict', options.fdict[0]
+        #reads the timestamps from the files
+        indexFile = configfile.readConfigFile(basepath+'.index') 
+        timestampup = indexFile.__getitem__('video_'+DB[options.fdict][0]+'.ma')[u'__timestamp__']
+        audioupindex = configfile.readConfigFile(audiobasepath+DB[options.fdict][0]+'/.index')
+        audioupstamp = audioupindex.__getitem__(u'.')[u'__timestamp__'] 
+ 
+       
+        diffup = audioupstamp - timestampup
 
-            #reads the timestamps from the files
-            indexFile = configfile.readConfigFile(basepath+'.index') 
-            timestampup = indexFile.__getitem__('video_'+DB[options.fdict][0]+'.ma')[u'__timestamp__']
-            timestampdown = indexFile.__getitem__('video_'+DB[options.fdict][1]+'.ma')[u'__timestamp__']
-            audioupindex = configfile.readConfigFile(audiobasepath+DB[options.fdict][0]+'/.index')
-            audioupstamp = audioupindex.__getitem__(u'.')[u'__timestamp__'] 
-            audiodownindex = configfile.readConfigFile(audiobasepath+DB[options.fdict][1]+'/.index')
-            audiodownstamp = audiodownindex.__getitem__(u'.')[u'__timestamp__'] 
-           
-            diffup = audioupstamp - timestampup
-            diffdown = audiodownstamp - timestampdown 
+        
+        
+        audio = MetaArray(file = audioupf, subset=(slice(0,2), slice(64,128), slice(64,128)))
+        audiotime = audio.axisValues('Time').astype('float32')
+        audiomin = np.min(audiotime) + diffup
+        audiomax = np.max(audiotime) + diffup
+        
+        print 'audiomin', audiomin
+        print 'audiomax', audiomax
 
-            
-            if file is videoupf:
-                audio = MetaArray(file = audioupf, subset=(slice(0,2), slice(64,128), slice(64,128)))
-                audiotime = audio.axisValues('Time').astype('float32')
-                audiomin = np.min(audiotime) + diffup
-                audiomax = np.max(audiotime) + diffup
-            elif file is videodwnf:
-                audio = MetaArray(file = audiodwnf, subset=(slice(0,2), slice(64,128), slice(64,128)))
-                audiotime = audio.axisValues('Time').astype('float32')
-                audiomin = np.min(audiotime) + diffdown
-                audiomax = np.max(audiotime) + diffdown
-            else:
-                print 'ERROR!  Unable to load audio file'
-            print 'audiomin', audiomin
-            print 'audiomax', audiomax
+        adjustedtime = rawtimes[np.logical_and(rawtimes <= audiomax+.5, rawtimes >= audiomin)]
+        
+        adjustedimagedata = rawimageData[np.logical_and(rawtimes <= audiomax+.5, rawtimes >= audiomin)]
+ 
+        self.times = [x-np.min(adjustedtime) for x in adjustedtime]
+        self.imageData = adjustedimagedata
+        # self.imageData=np.mean(self.imageData, axis=0)
+        self.imageData=self.imageData.mean()
 
-            adjustedtime = rawtimes[np.logical_and(rawtimes <= audiomax+.5, rawtimes >= audiomin)]
-            
-            adjustedimagedata = rawimageData[np.logical_and(rawtimes <= audiomax+.5, rawtimes >= audiomin)]
-            # print 'adjtime', adjustedtime
-            self.times = [x-np.min(adjustedtime) for x in adjustedtime]
-            self.imageData = adjustedimagedata
-            #print 'self.times:', self.times
-            # print 'length of self.times', np.shape(self.times)
-            # print 'shape of image data', np.shape(self.imageData)
+        # for background file
+        im2=[]
+        self.imageData2 = []
+        print "loading data from ", videodwnf
+        try:
+            im2 = MetaArray(file = videodwnf,  subset=(slice(0,2), slice(64,128), slice(64,128)))
+        except:
+            print "Error loading upfile: %s\n" % videodwnf
+            return
+        print "data loaded"
+        
+         
+        rawtimes=[]
+        rawimageData=[]
+        rawtimes = im2.axisValues('Time').astype('float32')
 
-            im=[]
-            if file is videoupf:
-               upflag = 1
-            else:
-               upflag = 0
-            #print 'target:', target
+        rawimageData = im2.view(np.ndarray).astype('float32')
+#  
 
-            self.subtract_Background(diffup=diffup)
-            self.Analysis_FourierMap_TFR(period=measuredPeriod, target = target,  bins=binsize, up=upflag)
-        print 'target:', target
-        if target > 0:
-            self.plotmaps_pg(mode = 1, target = target, gfilter = gfilt)
+        #reads the timestamps from the files
+        indexFile = configfile.readConfigFile(basepath+'.index') 
+        timestampdwn = indexFile.__getitem__('video_'+DB[options.fdict][1]+'.ma')[u'__timestamp__']
+        audiodwnindex = configfile.readConfigFile(audiobasepath+DB[options.fdict][1]+'/.index')
+        audiodwnstamp = audiodwnindex.__getitem__(u'.')[u'__timestamp__'] 
+ 
+       
+        diffdwn = audiodwnstamp - timestampdwn
 
+        
+        
+        audio = MetaArray(file = audiodwnf, subset=(slice(0,2), slice(64,128), slice(64,128)))
+        audiotime = audio.axisValues('Time').astype('float32')
+        audiomin = np.min(audiotime) + diffdwn
+        audiomax = np.max(audiotime) + diffdwn
+        
+        print 'audiomin', audiomin
+        print 'audiomax', audiomax
+
+        adjustedtime = rawtimes[np.logical_and(rawtimes <= audiomax+.5, rawtimes >= audiomin)]
+        
+        adjustedimagedata = rawimageData[np.logical_and(rawtimes <= audiomax+.5, rawtimes >= audiomin)]
+ 
+        self.times = [x-np.min(adjustedtime) for x in adjustedtime]
+        self.imageData2 = adjustedimagedata
+        self.imageData2=self.imageData2.mean()
+        print 'size of imagedata', self.imageData2.shape
+        diffframes = self.imageData/self.imageData2
+        procimage=diffframes/diffframes.mean()/diffframes.std()
+
+
+        self.avgframes = pg.image(diffframes, title='Average across frames')
         return
 
     def subtract_Background(self, diffup=0.005):
         #loading background data
         print 'running subtractBackground'
-
-        bckfile = videobasepath + '008.ma'
-        bckaudio = audiobasepath + '008/DaqDevice.ma'
-
+        bckfile = videobasepath + '005.ma'
+        bckaudio = audiobasepath + '005/DaqDevice.ma'
         # bckfile = videobasepath + '011.ma'
         # bckaudio = audiobasepath + '011/DaqDevice.ma'
         
@@ -386,20 +381,21 @@ class testAnalysis():
         self.imageData=getout2
         print 'shape of background', bckimagedata.shape
         print 'shape of imageData', self.imageData.shape
-        if bckimagedata.shape[0] <= self.imageData.shape[0]:
-            print 'image is longer'
-            stop = bckimagedata.shape[0]
-            print 'stop'
-            self.imageData=self.imageData[: stop,:,:,:]
-            print 'stop2'
-            subtractor = np.zeros(bckimagedata.shape, float)
-            diffimage = np.zeros(bckimagedata.shape, float)
-            subtractor = np.mean(np.array([self.imageData,bckimagedata]), axis=0)
-            #diffimage=sub_func(self.imageData, subtractor)
-            diffimage = self.imageData - subtractor
-            print 'stop 3'     
-        else:
-            print 'error! image is shorter, fix this code!'
+        bckimagedata=np.mean(bckimagedata,axis=0)
+        # if bckimagedata.shape[0] <= self.imageData.shape[0]:
+        #     print 'image is longer'
+        #     stop = bckimagedata.shape[0]
+        #     print 'stop'
+        #     self.imageData=self.imageData[: stop,:,:,:]
+        #     print 'stop2'
+        #     subtractor = np.zeros(bckimagedata.shape, float)
+        #     diffimage = np.zeros(bckimagedata.shape, float)
+        #     subtractor = np.mean(np.array([self.imageData,bckimagedata]), axis=0)
+        #     #diffimage=sub_func(self.imageData, subtractor)
+        #     diffimage = self.imageData - subtractor
+        #     print 'stop 3'     
+        # else:
+        #     print 'error! image is shorter, fix this code!'
         diffimage = scipy.signal.detrend(diffimage, axis=0)    
         self.imageData = diffimage    
         return
@@ -439,33 +435,7 @@ class testAnalysis():
 #         # calculate FFT and get amplitude and phase
 #         self.DF = numpy.fft.fft(D, axis = 0)
         #self.reshapeImage()
-        dt = numpy.mean(numpy.diff(self.times))
         D=numpy.mean(self.imageData, axis = 0)
-        LPF = 0.2/dt
-        flpf = float(LPF)
-        sf = float(1.0/dt)
-        wn = [flpf/(sf/2.0)]
-        NPole=8
-        filter_b,filter_a=scipy.signal.bessel(
-                NPole,
-                wn,
-                btype = 'low',
-                output = 'ba')
-        print "boxcar LPF"
-        for i in range(0, self.imageData.shape[1]):
-            for j in range(0, self.imageData.shape[2]):
-               # self.imageData[:,i,j] = self.imageData[:,i,j] - self.timeavg
-# OLD: stsci not available anymore
-#               box_2D_kernel = astropy.convolve.Box2DKernel(2*n_PtsPerCycle)
-#               box_2D_kernel = Box2DKernel(5)
-                #box_2D_kernel = Box1DKernel(5)
-#               print self.imageData[:,i,j]
-#               print len(self.imageData[:,i,j])
-#               print box_2D_kernel
-                #self.imageData[:,i,j] = self.imageData[:,i,j] - convolve_fft(self.imageData[:,i,j], box_2D_kernel) 
-#                self.imageData[:,i,j] = self.imageData[:,i,j] - scipy.stsci.convolve.boxcar(self.imageData[:,i,j], (2*n_PtsPerCycle,)) 
-                self.imageData[:,i,j]=scipy.signal.lfilter(filter_b, filter_a, scipy.signal.detrend(self.imageData[:,i,j], axis=0)) # filter the incoming signal
-    
         print 'shape of D', D.shape
         self.DF = numpy.fft.fft(D, axis = 0)
         ampimg = numpy.abs(self.DF[1,:,:]).astype('float32')
