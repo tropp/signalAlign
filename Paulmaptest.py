@@ -66,7 +66,7 @@ fl2 = [4.0, 4.756, 5.656, 6.727, 8.0, 9.5, 11.3, 13.45, 16.0, 19.02, 22.62, 26.9
 # 15 May 10:  used amber LED (noisy) for 610 illumination
 DB = {10: ('010', '011', 610, 15.0, 6.444, '15May10', fl1, 'thinned skull')} # lots of hf oscillations in image; phase map ???
 DB[14] = ('014', '015', 610, 15.0, 6.444, '15May10', fl1, 'dura, focus near surface') # hmmm
-DB[18] = ('018', '019', 610, 15.0, 6.444, '15May10', fl1, 'dura, deeper focus')
+#DB[18] = ('018', '019', 610, 15.0, 6.444, '15May10', fl1, 'dura, deeper focus')
 DB[22] = ('022', '023', 610, 8.0, 6.444, '15May10', fl1, 'dura, deeper focus')
 DB[24] = ('024', '025', 610, 29.0, 6.444, '15May10', fl1, 'dura, deeper focus')
 DB[26] = ('026', '027', 560, 29.0, 6.444, '15May10', fl1, 'dura, deeper focus') # light fluctuations; some phase shifts though
@@ -106,7 +106,8 @@ DB[84] = ('084', '087', 610, 15.0, 4.204, '09Jun10', fl2, 'thinned skull') # 610
 
 DB[18] = ('018','015', 610, 5.0, 4.25, '05Feb16', fl1, 'thinned skull')
 DB[19] = ('019','014', 610, 5.0, 4.25, '05Feb16', fl1, 'thinned skull')
-
+#DB[18] = ('018','015', 610, 5.0, 4.25, '05Feb16', fl1, 'thinned skull')
+DB[17] = ('017','016', 610, 5.0, 4.25, '05Feb16', fl1, 'thinned skull')
 
 D = []
 d = []
@@ -264,9 +265,9 @@ class testAnalysis():
                upflag = 0
             self.Analysis_FourierMap(period=measuredPeriod, target = target,  bins=binsize, up=upflag)
         if target > 0:
-            self.plotmaps(mode = 1, target = target, gfilter = gfilt)
+            self.plotmaps_pg(mode = 1, target = target, gfilter = gfilt)
 
-    def Analysis_FourierMap(self, period = 8.0, target = 1, mode=0, bins = 1, up=1):
+    def Analysis_FourierMap(self, period = 4.25, target = 1, mode=0, bins = 1, up=1):
         global D
         D = []
         self.DF = []
@@ -328,7 +329,11 @@ class testAnalysis():
         self.avgimg = numpy.mean(self.imageData, axis=0) # get mean image for reference later: average across all time
         self.stdimg = numpy.std(self.imageData, axis= 0) # and standard deviation
         # timeavg is calculated on the central region only:
+
         self.timeavg = numpy.mean(numpy.mean(self.imageData[:,int(sh[1]*0.25):int(sh[1]*0.75),int(sh[2]*0.25):int(sh[2]*0.75)], axis=2),axis=1) # return average of entire image over time
+        # I want to define the central region in a different way.  I was to define it at the area in the middle, where the signal is 
+        # less that two standard deviations from the mean- I believe that this is where the signal lies.
+        print 'size of self.timeavg', np.shape(self.timeavg)
         print " >>Before HPF: Noise floor (std/mean): %12.6f  largest std: %12.6f" % (numpy.mean(self.stdimg)/numpy.mean(self.avgimg), 
                numpy.amax(self.stdimg)/numpy.mean(self.avgimg))
 
@@ -340,9 +345,10 @@ class testAnalysis():
         mta = scipy.signal.detrend(self.timeavg)
         mtaa = numpy.mean(mta, axis=0)
         stdta = numpy.std(mta)
-        rjstd = 2.0*stdta
+        rjstd = 3.0*stdta
         pts = len(self.timeavg)
-        reject = numpy.where(numpy.abs(mta) > rjstd)
+        reject = numpy.where(numpy.abs(mta) < rjstd)
+        #print 'reject', reject
         trej = numpy.array(self.timebase[reject])
         LPF = 0.2/dt
         lfilt = SignalFilter_LPFBessel(scipy.signal.detrend(zid, axis=0), LPF, samplefreq=1.0/dt , NPole = 8, reduce = False)
@@ -388,7 +394,7 @@ class testAnalysis():
 # OLD: stsci not available anymore
 #               box_2D_kernel = astropy.convolve.Box2DKernel(2*n_PtsPerCycle)
 #               box_2D_kernel = Box2DKernel(5)
-                box_2D_kernel = Box1DKernel(5)
+                box_2D_kernel = Box1DKernel(n_PtsPerCycle)
 #               print self.imageData[:,i,j]
 #               print len(self.imageData[:,i,j])
 #               print box_2D_kernel
@@ -417,11 +423,13 @@ class testAnalysis():
         print "now calculating mean"
         # excluding bad trials
         trials = range(0, n_Periods)
+        print 'trials', trials
+        print n_PtsPerCycle
         reject = reject[0]
         for i in range(0,len(reject)):
             t = reject[i]/n_PtsPerCycle
-            if t in trials:
-                trials.remove(t)
+            #if t in trials:
+                #trials.remove(t)
         print "retaining trials: ", trials
         D = numpy.mean(self.imageData[trials,:,:,:], axis=0).astype('float32') # /divider # get mean of the folded axes.
         print "mean calculated, now detrend and fft"
@@ -639,21 +647,21 @@ class testAnalysis():
             np1 = scipy.ndimage.gaussian_filter(self.phaseImage1, gfilt, order=0, mode='reflect')
             np2 = scipy.ndimage.gaussian_filter(self.phaseImage2, gfilt, order=0, mode='reflect')
             dphase = np1 + np2
-            for i in range(dphase.shape[0]):
-                for j in range(dphase.shape[1]):
-                    #for k in range(dphase.shape[2]):
-                    if dphase[i,j]<0:
-                        dphase[i,j] = dphase[i,j]+2*np.pi
-                    if dphase[i,j]<2*np.pi/5:
-                        dphase[i,j]=0
-                    elif dphase[i,j]<4*np.pi/5:
-                        dphase[i,j]=1
-                    elif dphase[i,j]<6*np.pi/5:
-                        dphase[i,j]=2
-                    elif dphase[i,j]<8*np.pi/5:
-                        dphase[i,j]=3
-                    else:
-                        dphase[i,j]=4
+            # for i in range(dphase.shape[0]):
+            #     for j in range(dphase.shape[1]):
+            #         #for k in range(dphase.shape[2]):
+            #         if dphase[i,j]<0:
+            #             dphase[i,j] = dphase[i,j]+2*np.pi
+                    # if dphase[i,j]<2*np.pi/5:
+                    #     dphase[i,j]=0
+                    # elif dphase[i,j]<4*np.pi/5:
+                    #     dphase[i,j]=1
+                    # elif dphase[i,j]<6*np.pi/5:
+                    #     dphase[i,j]=2
+                    # elif dphase[i,j]<8*np.pi/5:
+                    #     dphase[i,j]=3
+                    # else:
+                    #     dphase[i,j]=4
             #dphase = self.phaseImage1 - self.phaseImage2
            
             #scipy.ndimage.gaussian_filter(dphase, 2, order=0, output=dphase, mode='reflect')
