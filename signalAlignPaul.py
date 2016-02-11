@@ -50,77 +50,81 @@ except:
 import pyqtgraph as pg #added to deal with plottng issues TFR 11/13/15
 app = pg.Qt.QtGui.QApplication([])
 
+import pyqtgraph.configfile as configfile
 from pyqtgraph.metaarray import MetaArray
 #import pylibrary.Utility as Utils
 #from pylibrary.Utility import SignalFilter_LPFBessel
 from optparse import OptionParser
 
-# frequency list for runs 15 May, 24 May and 2 June 2010, until #60 in 2-June
-freqlist = np.logspace(0, 4, num=17, base=2.0)
-fl1 = [3000*x for x in freqlist]
-#fl1=[1, 1.414, 2.0, 2.828, 4.0, 5.656, 8.0, 11.318, 16.0, 22.627, 32.0, 45.254]
-# frequency list for runs 2-June 2010, starting at #60 (heavier coverage of higher frequencies) and text note
-fl2 = [4.0, 4.756, 5.656, 6.727, 8.0, 9.5, 11.3, 13.45, 16.0, 19.02, 22.62, 26.91, 31.99, 38.09, 45.25, 53.8]
-# dictionary of data sets
-# Keys are first file #. Data are file name (up, down), wavelength, attn, period, date, frequency list, comment
-# 15 May 10:  used amber LED (noisy) for 610 illumination
-DB = {10: ('010', '011', 610, 15.0, 6.444, '15May10', fl1, 'thinned skull')} # lots of hf oscillations in image; phase map ???
-DB[14] = ('014', '021', 610, 15.0, 4.25, '09Feb16', fl1, 'thinned skull') #Tessa's data
-#DB[18] = ('018', '019', 610, 15.0, 6.444, '15May10', fl1, 'dura, deeper focus')
-DB[22] = ('022', '023', 610, 8.0, 6.444, '15May10', fl1, 'dura, deeper focus')
-DB[24] = ('024', '025', 610, 29.0, 6.444, '15May10', fl1, 'dura, deeper focus')
-DB[26] = ('026', '027', 560, 29.0, 6.444, '15May10', fl1, 'dura, deeper focus') # light fluctuations; some phase shifts though
-DB[28] = ('028', '029', 560, 26.0, 6.444, '15May10', fl1, 'dura, focus near surface') # too many large fluctuations - can't trust
-DB[5] = ('005', '002', 610, 20, 4.25, '05Feb16', fl1, 'dura')
-# 24 May 10: used white LED and put 610 filter in front of camera (quieter illumination)
-# potential damage to cortex (bleeder)
-DB[32] = ('032', '033', 610, 5.0, 6.412, '24May10', fl1, 'dura, just below surface') # amplitude maps look similar; phase maps look good
-DB[34] = ('034', '035', 610, 30.0, 6.412, '24May10', fl1, 'dura, just below surface') #linear drift, but corrections ok; phase gradient
-DB[36] = ('037', '036', 610, 120.0, 6.412, '24May10', fl1, 'dura, just below surface') # no input to speaker; phase map somewhat flat
-DB[39] = ('039', '041', 610, 20.0, 6.482, '24May10', fl1, 'dura, just below surface') # illim steady; no clear resonse in phase map
 
-# 02 June 10: used white LED and green LED
-DB[42] = ('042', '043', 610, 5.0, 6.452, '02Jun10', fl1, 'thinned skull') # not too bad
-DB[44] = ('045', '044', 560, 5.0, 6.452, '02Jun10', fl1, 'thinned skull') # not bad; led is stable
-DB[48] = ('049', '048', 560, 5.0, 6.412, '02Jun10', fl1, 'thinned skull') # up has large drift - NG
-DB[50] = ('050', '051', 610, 20.0, 6.412, '02Jun10', fl1, 'thinned skull') # both have drift, but not many larg fluctuatiosn - map spotty
-DB[52] = ('052', '033', 610, 35.0, 6.422, '02Jun10', fl1, 'thinned skull, focussed slightly deeper') # many large light flucturtions
-DB[54] = ('054', '055', 610, 120.0, 6.412, '02Jun10', fl1, 'thinned skull') # no stim control
-DB[56] = ('056', '057', 560, 120.0, 6.412, '02Jun10', fl1, 'thinned skull') # no stim control
-# changed frequency map for next runs on 02 June 2010
-DB[60] = ('061', '060', 560, 10.0, 4.276, '02Jun10', fl2, 'thinned skull') # large drift on direction
-DB[62] = ('062', '063', 610, 10.0, 4.276, '02Jun10', fl2, 'thinned skull') # drift and noise
-DB[64] = ('064', '065', 610, 30.0, 4.274, '02Jun10', fl2, 'thinned skull') # possibly OK - clean illumination
-DB[66] = ('066', '067', 610, 15.0, 4.274, '02Jun10', fl2, 'thinned skull') # Might be good!!!!
-
-# 09 June 10: QuantEM512SC for imaging 
-DB[68] = ('068', '069', 610, 15.0, 4.228, '09Jun10', fl2, 'thinned skull') # focus near surface Might be good!!!! diagonal phase gradient
-DB[70] = ('070', '071', 610, 15.0, 4.228, '09Jun10', fl2, 'thinned skull') # focus deeper Might be good!!!! Diagonal phase gradient - but horizontal stripe too
-DB[73] = ('073', '074', 610, 15.0, 4.228, '09Jun10', fl2, 'thinned skull') # same as 68/70, but no stimulation Might be good!!!!
-DB[75] = ('075', '076', 560, 15.0, 4.224, '09Jun10', fl2, 'thinned skull') # Green light, 120 msec integration time phase map with structure
-DB[77] = ('077', '078', 560, 25.0, 4.248, '09Jun10', fl2, 'thinned skull') # Green light, 151 msec integration time - a little noisy ?
-DB[79] = ('079', '081', 610, 15.0, 4.204, '09Jun10', fl2, 'thinned skull') # 610, 30 fps, 30 msec integration time way too big to handle
-DB[82] = ('082', '085', 610, 15.0, 4.204, '09Jun10', fl2, 'thinned skull') # 610, 30 fps, 30 msec integration time broken down, gradient, but horizontal stripe
-DB[83] = ('083', '086', 610, 15.0, 4.204, '09Jun10', fl2, 'thinned skull') # 610, 30 fps, 30 msec integration time -- Diagonal gradient 
-DB[84] = ('084', '087', 610, 15.0, 4.204, '09Jun10', fl2, 'thinned skull') # 610, 30 fps, 30 msec integration time -- Diagonal gradient
-
-DB[18] = ('018','015', 610, 5.0, 4.25, '05Feb16', fl1, 'thinned skull')
-DB[19] = ('019','014', 610, 5.0, 4.25, '05Feb16', fl1, 'thinned skull')
-#DB[18] = ('018','015', 610, 5.0, 4.25, '05Feb16', fl1, 'thinned skull')
-DB[17] = ('017','016', 610, 5.0, 4.25, '05Feb16', fl1, 'thinned skull')
 
 D = []
 d = []
-measuredPeriod = 4.25
+measuredPeriod = 4.5
 binsize = 4
 gfilt = 0
-freqlist = numpy.logspace(3, 4.7, 12, base=10)
-homedir = os.getenv('HOME')
-workingpath = 'Desktop/IntrinsicImaging/video_'
-basepath = os.path.join(homedir, workingpath)
-#basepath = '/Volumes/Promise Pegasus/ManisLab_Data3/IntrinsicImaging/'
-basepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.09_000/animal_000/video_'
+#
+freqlist = np.logspace(0, 4, num=17, base=2.0)
+fl = [3000*x for x in freqlist]
+print 'fl:', fl
 
+freqlist = np.logspace(0, 4, num=9, base=2.0)
+fl1 = [3000*x for x in freqlist]
+print 'fl1:', fl1
+
+# Keys are first file #. Data are file name (up, down), wavelength, attn, period, date, frequency list, comment
+DB = {11: ('011', '013', 610, 20.0, 4.25, '08Jan16', fl, 'thinned skull')}
+#DB[19] = ('019','018', 610, 15.0, 4.25, '13Jan16', fl, 'thinned skull')
+#DB[4] = ('004','002', 610, 20.0, 4.25, '13Jan16', fl, 'thinned skull')
+DB[5] =  ('005','003',610, 20.0, 4.25, '13Jan16', fl, 'thinned skull')
+#DB[7] = ('007', '008', 610, 120.0, 4.25, '13Jan16', fl, 'thinned skull')
+DB[12] = ('012', '011', 610, 120.0, 4.25, '13Jan16', fl, 'thinned skull') #sound unplugged
+DB[4] = ('004','005', 610, 20.0, 4.25, '01Feb16', fl, 'thinned skull')
+DB[7] = ('007','008', 610, 20.0, 4.25, '01Feb16', fl, 'thinned skull')
+DB[3] = ('003','002', 610, 20.0, 4.25, '01Feb16', fl, 'thinned skull')
+DB[20] = ('020','019', 610, 30.0, 4.25, '01Feb16', fl, 'thinned skull')# noise for 12.75 seconds
+DB[33] = ('033','024', 610, 10.0, 4.5, '09Feb16', fl, 'thinned skull')# noise for 12.75 seconds
+
+DB[12] = ('011','012', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
+DB[10] = ('010','013', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
+DB[9] = ('009','017', 610, 10.0, 4.5, '09Feb16', fl, 'thinned skull')
+DB[8] = ('008','015', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
+DB[7] = ('007','016', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
+DB[27] = ('027','024', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
+
+DB[11] = ('011','012', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
+DB[5] = ('005','002', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
+DB[18] = ('018','015', 610, 5.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[19] = ('019','014', 610, 5.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[14] = ('014', '021', 610, 20.0, 4.5, '09Feb16', fl1, 'thinned skull') #Tessa's data
+
+# # Timestamps.  Keys are first file number.  Data are videoup, audioup, videodown, audiodown start times
+# timestamp = {11: (1452278712.382, 1452278713.787, 1452278790.432, 1452278791.642)}
+# timestamp[19] =  (1452713884.635, 1452713885.25, 1452713843.612, 1452713844.84)
+# timestamp[4] = (1452712481.09, 1452712482.456, 1452712288.048, 1452712289.394)             
+# timestamp[5] = (1452712556.376, 1452712557.921, 1452712371.056, 1452712373.436)
+# timestamp[7] = (1452712735.321, 1452712736.654, 1452712778.485, 1452712779.631)
+# timestamp[12] = (1452713276.699, 1452713277.68, 1452713150.485, 1452713151.894)
+           
+
+homedir = os.getenv('HOME')
+videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.09_000/animal_000/video_'
+basepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.09_000/animal_000/'
+audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.09_000/animal_000/Sound_Stimulation_'
+# videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/Second_round/video_'
+# basepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/Second_round/'
+# audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/Second_round/Sound_Stimulation_video_'
+###  Don't forget to change the backgrounf file!
+
+# videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/First_round/video_'
+# basepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/First_round/'
+# audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/First_round/Sound_Stimulation_video_'
+# videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.01.13_000/video_'
+# basepath = '/Volumes/TRoppData/data/Intrinsic/2016.01.13_000/'
+# audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.01.13_000/Sound_Stimulation_video_'
+# videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.01.08_000/Intrinsic_Mapping/video_'
+# basepath = '/Volumes/TRoppData/data/Intrinsic/2016.01.08_000/Intrinsic_Mapping/'
+# audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.01.08_000/Intrinsic_Mapping/Sound_Stimulation_video_'
 class testAnalysis():
     def __init__(self):
         global d
@@ -139,6 +143,7 @@ class testAnalysis():
         
     def parse_and_go(self, argsin = None):
         global period
+        global binsize
         parser=OptionParser() # command line options
         ##### parses all of the options inputted at the command line TFR 11/13/2015
         parser.add_option("-u", "--upfile", dest="upfile", metavar='FILE',
@@ -149,7 +154,7 @@ class testAnalysis():
                           help="Use directory for data")
         parser.add_option("-t", "--test", dest="test", action='store_true',
                           help="Test mode to check calculations", default=False)
-        parser.add_option("-p", '--period', dest = "period", default=8.0, type="float",
+        parser.add_option("-p", '--period', dest = "period", default=4.25, type="float",
                           help = "Stimulus cycle period")
         parser.add_option("-c", '--cycles', dest = "cycles", default=0, type="int",
                           help = "# cycles to analyze")
@@ -159,22 +164,12 @@ class testAnalysis():
                           help = "gaussian filter width")
         parser.add_option("-f", '--fdict', dest = "fdict", default=0, type="int",
                           help = "Use dictionary entry")
+        
         if argsin is not None:
             (options, args) = parser.parse_args(argsin)
         else:
             (options, args) = parser.parse_args()
 
-        if options.period is not None:
-            measuredPeriod = options.period
-        if options.cycles is not None:
-            self.nCycles = options.cycles
-        if options.binsize is not None:
-            binsize = options.binsize
-        if options.gfilt is not None:
-            gfilt = options.gfilt
-
-            #TFR- this code generates a test signal for running a test analysis sequence
-        print options.test
         if options.test is True:
             print "Running Test Sample"
             period = 8.0 # period and frame sample rate can be different
@@ -199,8 +194,8 @@ class testAnalysis():
                #     print '     tdel: ', tdelay, '    idel: ', idelay
                 #    if idelay < self.nFrames-maxdel:
                 #        self.resp[idelay:idelay+maxdel] = (i+1)*numpy.exp(-numpy.linspace(0, 2, maxdel)) # marks amplitudes as well
-                self.resp = numpy.sin(
-                         numpy.linspace(0, 2.0*numpy.pi*self.nFrames/(period*framerate), self.nFrames)+i*numpy.pi/8 - numpy.pi/2.0)
+                self.resp = 1000.0*numpy.sin(
+                         numpy.linspace(0, 2.0*numpy.pi*self.nFrames/(period*framerate), self.nFrames)+i*numpy.pi/8.0 - numpy.pi/2.0)
                 d[:, dx:dx+int(ds[1]/self.nPhases), 5:int(ds[2]/2)] += self.resp[:, numpy.newaxis, numpy.newaxis]
                 self.phasex.append( (2+(dx+int(ds[1]/self.nPhases))/2))
                 self.phasey.append((6+int(ds[2]/2)/2)) # make the signal equivalent of digitized one (baseline 3000, signal at 1e-4 of baseline)
@@ -208,13 +203,23 @@ class testAnalysis():
             self.imageData = d.astype('int16') # reduce to a 16-bit map to match camera data type
             self.times = numpy.arange(0, self.nFrames/framerate, 1.0/framerate)
             print "Test Image Created"
-            self.Analysis_FourierMap(period = period, target = 1, mode=1, bins=binsize)
+            getout2 = fac_lift(self.imageData, self.times)
+            self.imageData=getout2
+            self.Analysis_FourierMap_TFR(period=period, target = 1, mode=1, bins=binsize)
             print "Completed Analysis FourierMap"
-            self.plotmaps_pg(mode = 2, gfilter = gfilt)
+            self.plotmaps_pg(mode = 2, gfilter = 0)
             print "Completed plot maps"
 
-            return
+        if options.period is not None:
+            measuredPeriod = options.period
+        if options.cycles is not None:
+            self.nCycles = options.cycles
+        if options.binsize is not None:
+            binsize = options.binsize
+        if options.gfilt is not None:
+            gfilt = options.gfilt
 
+        print 'DB keys', DB.keys()
         if options.fdict is not None:
             if options.fdict in DB.keys(): # populate options 
                 options.upfile = DB[options.fdict][0]
@@ -235,14 +240,24 @@ class testAnalysis():
             target = 2
 
         target = 0
-        upf = None
-        dwnf = None
-        if options.upfile is not None:
-            upf = basepath + options.upfile + '.ma'
-        if options.downfile is not None:
-            dwnf = basepath + options.downfile + '.ma'
+        videoupf = None
+        videodwnf = None
+        audioupf = None
+        audiodwnf = None
 
-        for file in (upf, dwnf):
+        if options.upfile is not None:
+            videoupf = videobasepath + options.upfile + '.ma'
+            audioupf = audiobasepath + options.upfile + '/DaqDevice.ma'
+        if options.downfile is not None:
+            videodwnf = videobasepath + options.downfile + '.ma'
+            audiodwnf = audiobasepath + options.downfile + '/DaqDevice.ma'
+
+        # indexFile = configfile.readConfigFile(basepath+'.index') 
+        # time = indexFile.__getitem__('video_019.ma')[u'__timestamp__'] 
+
+        #indexFile = configfile.readConfigFile(basepath+'.index') 
+        #print 'indexfile', indexfile
+        for file in (videoupf, videodwnf):
 #if options.upfile is not None and options.downfile is not None:
             if file is None:
                break
@@ -256,18 +271,89 @@ class testAnalysis():
                 return
             print "data loaded"
             target = target + 1
-            self.times = im.axisValues('Time').astype('float32')
-            self.imageData = im.view(np.ndarray).astype('float32')
+            # dir = acq4.util.DataManager.getHandle(basepath)
+            # time = dir.info()['__timestamp__']
+            # print 'time:', time
+           #print 'im:', im
+            # dir(im)
+            rawtimes=[]
+            rawimageData=[]
+            rawtimes = im.axisValues('Time').astype('float32')
+#            print 'time', rawtimes
+            rawimageData = im.view(np.ndarray).astype('float32')
+#            print 'shape of ra image data:', rawimageData.shape
+            ## videobasepath = /......./2016.10.08_000/Intrinsic_Mapping/video_'
+            ## indexFile = configFile.readConfigFile('/...../2016.10.08_000/Intrinsic_Mapping/.index') -> a dictionary
+
+            # dir = acq4.util.DataManager.getHandle(videoupf)
+            # time = dir.info()['__timestamp__']
+            
+            # #timestampup = timestamp[options.fdict][0]
+            # audioupstamp = timestamp[options.fdict][1]
+            # #timestampdown = timestamp[options.fdict][2]
+            # audiodownstamp = timestamp[options.fdict][3]
+            # #print 'optioins.dict', options.fdict[0]
+
+            #reads the timestamps from the files
+            indexFile = configfile.readConfigFile(basepath+'.index') 
+            timestampup = indexFile.__getitem__('video_'+DB[options.fdict][0]+'.ma')[u'__timestamp__']
+            timestampdown = indexFile.__getitem__('video_'+DB[options.fdict][1]+'.ma')[u'__timestamp__']
+            audioupindex = configfile.readConfigFile(audiobasepath+DB[options.fdict][0]+'/.index')
+            # audioupstamp = audioupindex.__getitem__(u'.')[u'__timestamp__'] 
+            audioupstamp = audioupindex.__getitem__('DaqDevice.ma')[u'__timestamp__'] - 13.5
+            audiodownindex = configfile.readConfigFile(audiobasepath+DB[options.fdict][1]+'/.index')
+            #audiodownstamp = audiodownindex.__getitem__(u'.')[u'__timestamp__'] 
+            audiodownstamp = audiodownindex.__getitem__('DaqDevice.ma')[u'__timestamp__'] -13.5
+
+            diffup = audioupstamp - timestampup
+            diffdown = audiodownstamp - timestampdown 
+
+            
+            if file is videoupf:
+                audio = MetaArray(file = audioupf, subset=(slice(0,2), slice(64,128), slice(64,128)))
+                audiotime = audio.axisValues('Time').astype('float32')
+                audiomin = np.min(audiotime) + diffup
+                audiomax = np.max(audiotime) + diffup
+            elif file is videodwnf:
+                audio = MetaArray(file = audiodwnf, subset=(slice(0,2), slice(64,128), slice(64,128)))
+                audiotime = audio.axisValues('Time').astype('float32')
+                audiomin = np.min(audiotime) + diffdown
+                audiomax = np.max(audiotime) + diffdown
+            else:
+                print 'ERROR!  Unable to load audio file'
+            print 'audiomin', audiomin
+            print 'audiomax', audiomax
+
+            adjustedtime = rawtimes[np.logical_and(rawtimes <= audiomax+5, rawtimes >= audiomin)]
+            
+            adjustedimagedata = rawimageData[np.logical_and(rawtimes <= audiomax+5, rawtimes >= audiomin)]
+            # print 'adjtime', adjustedtime
+            self.times = [x-np.min(adjustedtime) for x in adjustedtime]
+            self.imageData = adjustedimagedata
+            #print 'self.times:', self.times
+            # print 'length of self.times', np.shape(self.times)
+            # print 'shape of image data', np.shape(self.imageData)
+
+            #analyze a quarter of the image
+            xcut = (self.imageData.shape[1]+1)/4
+            ycut = (self.imageData.shape[2]+1)/4
+            self.imageData=self.imageData[:,2*xcut-1:3*xcut-1,ycut-1:2*ycut-1]
             im=[]
-            if file is upf:
+            if file is videoupf:
                upflag = 1
             else:
                upflag = 0
+            #print 'target:', target
+            measuredPeriod=4.5
+            #self.subtract_Background(diffup=diffup)
             self.Analysis_FourierMap(period=measuredPeriod, target = target,  bins=binsize, up=upflag)
+        print 'target:', target
         if target > 0:
             self.plotmaps_pg(mode = 1, target = target, gfilter = gfilt)
 
-    def Analysis_FourierMap(self, period = 4.25, target = 1, mode=0, bins = 1, up=1):
+        return
+
+    def Analysis_FourierMap(self, period = 4.5, target = 1, mode=0, bins = 1, up=1):
         global D
         D = []
         self.DF = []
@@ -347,7 +433,7 @@ class testAnalysis():
         stdta = numpy.std(mta)
         rjstd = 3.0*stdta
         pts = len(self.timeavg)
-        reject = numpy.where(numpy.abs(mta) < rjstd)
+        reject = numpy.where(numpy.abs(mta) > rjstd)
         #print 'reject', reject
         trej = numpy.array(self.timebase[reject])
         LPF = 0.2/dt
@@ -647,11 +733,11 @@ class testAnalysis():
             np1 = scipy.ndimage.gaussian_filter(self.phaseImage1, gfilt, order=0, mode='reflect')
             np2 = scipy.ndimage.gaussian_filter(self.phaseImage2, gfilt, order=0, mode='reflect')
             dphase = np1 + np2
-            # for i in range(dphase.shape[0]):
-            #     for j in range(dphase.shape[1]):
-            #         #for k in range(dphase.shape[2]):
-            #         if dphase[i,j]<0:
-            #             dphase[i,j] = dphase[i,j]+2*np.pi
+            for i in range(dphase.shape[0]):
+                for j in range(dphase.shape[1]):
+                    #for k in range(dphase.shape[2]):
+                    if dphase[i,j]<0:
+                        dphase[i,j] = dphase[i,j]+2*np.pi
                     # if dphase[i,j]<2*np.pi/5:
                     #     dphase[i,j]=0
                     # elif dphase[i,j]<4*np.pi/5:
@@ -685,9 +771,9 @@ class testAnalysis():
             wvfms=[]
             for i in range(0, self.nPhases):
                 Dm = self.avgimg[i*spr,i*spr] # diagonal run
-                wvfms=self.n_times, 100.0*(D[:,self.phasex[i], self.phasey[i]]/Dm)
+                wvfms=self.n_times, 100.0*(D[:,self.phasex[i]-1, self.phasey[i]]/Dm)
                 #pylab.plot(self.n_times, 100.0*(D[:,self.phasex[i], self.phasey[i]]/Dm))
-                self.wavePlt.plot(self.n_times, 100.0*(D[:,self.phasex[i], self.phasey[i]]/Dm))
+                self.wavePlt.plot(self.n_times, 100.0*(D[:,self.phasex[i]-1, self.phasey[i]]/Dm))
                 #pylab.hold('on')
                 #self.plotlist.append(pg.image(wvfms, title="Waveforms"))
                 #print "it worked"
@@ -814,7 +900,7 @@ def SignalFilter_LPFBessel(signal, LPF, samplefreq, NPole=8, reduce=False, debug
         return signal
 
 if __name__ == "__main__":
-    
+    app = pg.Qt.QtGui.QApplication([])
 
     ta=testAnalysis()  # create instance (for debugging)
     ta.parse_and_go(sys.argv[1:])

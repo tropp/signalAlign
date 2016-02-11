@@ -78,6 +78,10 @@ freqlist = np.logspace(0, 4, num=17, base=2.0)
 fl = [3000*x for x in freqlist]
 print 'fl:', fl
 
+freqlist = np.logspace(0, 4, num=9, base=2.0)
+fl1 = [3000*x for x in freqlist]
+print 'fl1:', fl1
+
 # Keys are first file #. Data are file name (up, down), wavelength, attn, period, date, frequency list, comment
 DB = {11: ('011', '013', 610, 20.0, 4.25, '08Jan16', fl, 'thinned skull')}
 #DB[19] = ('019','018', 610, 15.0, 4.25, '13Jan16', fl, 'thinned skull')
@@ -102,7 +106,8 @@ DB[11] = ('011','012', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
 DB[5] = ('005','002', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
 DB[18] = ('018','015', 610, 5.0, 4.25, '05Feb16', fl, 'thinned skull')
 DB[19] = ('019','014', 610, 5.0, 4.25, '05Feb16', fl, 'thinned skull')
-r
+DB[14] = ('014', '021', 610, 15.0, 4.5, '09Feb16', fl1, 'thinned skull') #Tessa's data
+
 # # Timestamps.  Keys are first file number.  Data are videoup, audioup, videodown, audiodown start times
 # timestamp = {11: (1452278712.382, 1452278713.787, 1452278790.432, 1452278791.642)}
 # timestamp[19] =  (1452713884.635, 1452713885.25, 1452713843.612, 1452713844.84)
@@ -113,9 +118,9 @@ r
            
 
 homedir = os.getenv('HOME')
-videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.05_000/slice_002/video_'
-basepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.05_000/slice_002/'
-audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.05_000/slice_002/Sound_Stimulation_video_'
+videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.09_000/animal_000/video_'
+basepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.09_000/animal_000/'
+audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.09_000/animal_000/Sound_Stimulation_'
 # videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/Second_round/video_'
 # basepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/Second_round/'
 # audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/Second_round/Sound_Stimulation_video_'
@@ -344,7 +349,7 @@ class testAnalysis():
                upflag = 0
             #print 'target:', target
 
-            self.subtract_Background(diffup=diffup)
+            #self.subtract_Background(diffup=diffup)
             self.Analysis_FourierMap_TFR(period=measuredPeriod, target = target,  bins=binsize, up=upflag)
         print 'target:', target
         if target > 0:
@@ -405,7 +410,7 @@ class testAnalysis():
         return
 
     
-    def Analysis_FourierMap_TFR(self, period = 4.25, target = 1, mode=0, bins = 1, up=1):
+    def Analysis_FourierMap_TFR(self, period = 4.5, target = 1, mode=0, bins = 1, up=1):
         global D
         D = []
         self.DF = []
@@ -439,34 +444,35 @@ class testAnalysis():
 #         # calculate FFT and get amplitude and phase
 #         self.DF = numpy.fft.fft(D, axis = 0)
         #self.reshapeImage()
-        dt = numpy.mean(numpy.diff(self.times))
+##################filtering
+#         dt = numpy.mean(numpy.diff(self.times))
         D=numpy.mean(self.imageData, axis = 0)
-        LPF = 0.2/dt
-        flpf = float(LPF)
-        sf = float(1.0/dt)
-        wn = [flpf/(sf/2.0)]
-        NPole=8
-        filter_b,filter_a=scipy.signal.bessel(
-                NPole,
-                wn,
-                btype = 'low',
-                output = 'ba')
-        print "boxcar LPF"
-        for i in range(0, self.imageData.shape[1]):
-            for j in range(0, self.imageData.shape[2]):
-               # self.imageData[:,i,j] = self.imageData[:,i,j] - self.timeavg
-# OLD: stsci not available anymore
-#               box_2D_kernel = astropy.convolve.Box2DKernel(2*n_PtsPerCycle)
-#               box_2D_kernel = Box2DKernel(5)
-                #box_2D_kernel = Box1DKernel(5)
-#               print self.imageData[:,i,j]
-#               print len(self.imageData[:,i,j])
-#               print box_2D_kernel
-                #self.imageData[:,i,j] = self.imageData[:,i,j] - convolve_fft(self.imageData[:,i,j], box_2D_kernel) 
-#                self.imageData[:,i,j] = self.imageData[:,i,j] - scipy.stsci.convolve.boxcar(self.imageData[:,i,j], (2*n_PtsPerCycle,)) 
-                self.imageData[:,i,j]=scipy.signal.lfilter(filter_b, filter_a, scipy.signal.detrend(self.imageData[:,i,j], axis=0)) # filter the incoming signal
+#         LPF = 0.2/dt
+#         flpf = float(LPF)
+#         sf = float(1.0/dt)
+#         wn = [flpf/(sf/2.0)]
+#         NPole=8
+#         filter_b,filter_a=scipy.signal.bessel(
+#                 NPole,
+#                 wn,
+#                 btype = 'low',
+#                 output = 'ba')
+#         print "boxcar LPF"
+#         for i in range(0, self.imageData.shape[1]):
+#             for j in range(0, self.imageData.shape[2]):
+#                # self.imageData[:,i,j] = self.imageData[:,i,j] - self.timeavg
+# # OLD: stsci not available anymore
+# #               box_2D_kernel = astropy.convolve.Box2DKernel(2*n_PtsPerCycle)
+# #               box_2D_kernel = Box2DKernel(5)
+#                 #box_2D_kernel = Box1DKernel(5)
+# #               print self.imageData[:,i,j]
+# #               print len(self.imageData[:,i,j])
+# #               print box_2D_kernel
+#                 #self.imageData[:,i,j] = self.imageData[:,i,j] - convolve_fft(self.imageData[:,i,j], box_2D_kernel) 
+# #                self.imageData[:,i,j] = self.imageData[:,i,j] - scipy.stsci.convolve.boxcar(self.imageData[:,i,j], (2*n_PtsPerCycle,)) 
+#                 self.imageData[:,i,j]=scipy.signal.lfilter(filter_b, filter_a, scipy.signal.detrend(self.imageData[:,i,j], axis=0)) # filter the incoming signal
     
-        print 'shape of D', D.shape
+ #       print 'shape of D', D.shape
         self.DF = numpy.fft.fft(D, axis = 0)
         ampimg = numpy.abs(self.DF[1,:,:]).astype('float32')
         phaseimg = numpy.angle(self.DF[1,:,:]).astype('float32')
@@ -802,8 +808,8 @@ class testAnalysis():
                     result[i, j, k] = indata[i, ji[j], ki[k]].mean()
         return result
 
-def fac_lift(goingin, times, period=4.25,):
-        period = 4.25
+def fac_lift(goingin, times, period=4.5):
+        period = 4.5
         print "reshape Starting"
 
         maxt = times[-1] # find last image time

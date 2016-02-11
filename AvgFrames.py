@@ -40,6 +40,7 @@ import matplotlib
 import matplotlib.mlab as mlab
 import pylab
 from PyQt4 import QtGui
+from skimage import feature
 # try:
 #     import matplotlib
 #TFR 11/13/15 inserted the following line to try to resolve issue with pylab.show
@@ -93,6 +94,8 @@ DB[10] = ('010','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
 DB[11] = ('011','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
 DB[12]= ('012','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
 DB[13] = ('013','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[36] = ('036', '037', 610, 15.0, 4.25, '09Feb16', fl, 'thinned skull')
+DB[39] = ('039', '037', 610, 15.0, 4.25, '09Feb16', fl, 'thinned skull')
 
 
 # # Timestamps.  Keys are first file number.  Data are videoup, audioup, videodown, audiodown start times
@@ -107,7 +110,7 @@ DB[13] = ('013','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
 homedir = os.getenv('HOME')
 videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.09_000/animal_000/video_'
 basepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.09_000/animal_000/'
-audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.09_000/animal_000/Sound_Stimulation_video_'
+audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.09_000/animal_000/Sound_Stimulation_'
 # videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/Second_round/video_'
 # basepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/Second_round/'
 # audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/Second_round/Sound_Stimulation_video_'
@@ -305,21 +308,31 @@ class testAnalysis():
         pg.image(background[0], title='first background slice')
 
         background = np.mean(background,axis=0)
+        print 'dimensions of background', np.shape(background)
         pg.image(background, title='mean background')
         #subtract background from image files
 
+        print 'dimensions of imagedata', np.shape(self.imageData)
+        subtracted = np.zeros(np.shape(self.imageData), float)
+        divided = np.zeros(np.shape(self.imageData), float)
         for i in range(self.imageData.shape[0]):
-            self.subtracted = self.imageData[i,:,:]-background
-            self.divided = self.imageData[i,:,:]/background
+            subtracted[i,:,:] = (self.imageData[i,:,:]-background)
+            divided[i,:,:] = self.imageData[i,:,:]/background
             #subtracted = self.imageData-background
-        
-        self.subtracted = np.mean(self.subtracted, axis=0)
-        self.divided = np.mean(self.divided,axis=0)
-        pg.image(self.subtracted, title='subtracted')
-        pg.image(self.divided,title='divided')
+        subtracted=subtracted/subtracted.mean()
+        divided=divided/divided.mean()
+        print 'dimensions of subtracted', np.shape(subtracted)
+        print 'dimensions of divided', np.shape(divided)
+        subtracted = np.mean(subtracted, axis=0)
+        divided = np.mean(divided,axis=0)
+        pg.image(subtracted, title='subtracted')
+        pg.image(divided,title='divided')
 
         self.imageData = np.mean(self.imageData, axis=0)
+        print 'dimensions of imagedata', np.shape(self.imageData)
         pg.image(self.imageData,title='mean raw image')
+        edges=feature.canny(self.imageData, sigma=3)
+        pg.image(edges,title='edges')
         # for background file
 #         im2=[]
 #         self.imageData2 = []
