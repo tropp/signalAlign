@@ -105,9 +105,9 @@ DB[13] = ('013','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
            
 
 homedir = os.getenv('HOME')
-videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.05_000/slice_002/video_'
-basepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.05_000/slice_002/'
-audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.05_000/slice_002/Sound_Stimulation_video_'
+videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.09_000/animal_000/video_'
+basepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.09_000/animal_000/'
+audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.09_000/animal_000/Sound_Stimulation_video_'
 # videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/Second_round/video_'
 # basepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/Second_round/'
 # audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/Second_round/Sound_Stimulation_video_'
@@ -133,6 +133,8 @@ class testAnalysis():
         self.downfile = []
         self.avgimg = []
         self.imageData = []
+        self.subtracted = []
+        self.divided = []
         self.phasex = []
         self.phasey = []
         self.nPhases = 17
@@ -287,7 +289,7 @@ class testAnalysis():
         print 'audiomin', audiomin
         print 'audiomax', audiomax
 
-        adjustedtime = rawtimes[np.logical_and(rawtimes <= audiomax+.5, rawtimes >= audiomin)]
+        adjustedtime = rawtimes[np.logical_and(rawtimes <= audiomax+5, rawtimes >= audiomin)]
         frame_start=np.amin(np.where(rawtimes >= audiomin))
         frame_end=np.amax(np.where(rawtimes <= audiomax+0.5))
         adjustedimagedata = rawimageData[frame_start:frame_end]
@@ -296,65 +298,85 @@ class testAnalysis():
         self.times = [x-np.min(adjustedtime) for x in adjustedtime]
         self.imageData = adjustedimagedata
         # self.imageData=np.mean(self.imageData, axis=0)
-        self.imageData=np.mean(self.imageData)
+        
 
+        #background image
+        background = rawimageData[5:25]
+        pg.image(background[0], title='first background slice')
+
+        background = np.mean(background,axis=0)
+        pg.image(background, title='mean background')
+        #subtract background from image files
+
+        for i in range(self.imageData.shape[0]):
+            self.subtracted = self.imageData[i,:,:]-background
+            self.divided = self.imageData[i,:,:]/background
+            #subtracted = self.imageData-background
+        
+        self.subtracted = np.mean(self.subtracted, axis=0)
+        self.divided = np.mean(self.divided,axis=0)
+        pg.image(self.subtracted, title='subtracted')
+        pg.image(self.divided,title='divided')
+
+        self.imageData = np.mean(self.imageData, axis=0)
+        pg.image(self.imageData,title='mean raw image')
         # for background file
-        im2=[]
-        self.imageData2 = []
-        adjustedimagedata = []
+#         im2=[]
+#         self.imageData2 = []
+#         adjustedimagedata = []
 
-        print "loading data from ", videodwnf
-        try:
-            im2 = MetaArray(file = videodwnf,  subset=(slice(0,2), slice(64,128), slice(64,128)))
-        except:
-            print "Error loading upfile: %s\n" % videodwnf
-            return
-        print "data loaded"
+#         print "loading data from ", videodwnf
+#         try:
+#             im2 = MetaArray(file = videodwnf,  subset=(slice(0,2), slice(64,128), slice(64,128)))
+#         except:
+#             print "Error loading upfile: %s\n" % videodwnf
+#             return
+#         print "data loaded"
         
          
-        rawtimes=[]
-        rawimageData=[]
-        rawtimes = im2.axisValues('Time').astype('float32')
+#         rawtimes=[]
+#         rawimageData=[]
+#         rawtimes = im2.axisValues('Time').astype('float32')
 
-        rawimageData = im2.view(np.ndarray).astype('float32')
-#  
+#         rawimageData = im2.view(np.ndarray).astype('float32')
+# #  
 
-        #reads the timestamps from the files
-        indexFile = configfile.readConfigFile(basepath+'.index') 
-        timestampdwn = indexFile.__getitem__('video_'+DB[options.fdict][1]+'.ma')[u'__timestamp__']
-        audiodwnindex = configfile.readConfigFile(audiobasepath+DB[options.fdict][1]+'/.index')
-        audiodwnstamp = audiodwnindex.__getitem__(u'.')[u'__timestamp__'] 
+#         #reads the timestamps from the files
+#         indexFile = configfile.readConfigFile(basepath+'.index') 
+#         timestampdwn = indexFile.__getitem__('video_'+DB[options.fdict][1]+'.ma')[u'__timestamp__']
+#         audiodwnindex = configfile.readConfigFile(audiobasepath+DB[options.fdict][1]+'/.index')
+#         audiodwnstamp = audiodwnindex.__getitem__(u'.')[u'__timestamp__'] 
  
        
-        diffdwn = audiodwnstamp - timestampdwn
+#         diffdwn = audiodwnstamp - timestampdwn
 
         
         
-        audio = MetaArray(file = audiodwnf, subset=(slice(0,2), slice(64,128), slice(64,128)))
-        audiotime = audio.axisValues('Time').astype('float32')
-        audiomin = np.min(audiotime) + diffdwn
-        audiomax = np.max(audiotime) + diffdwn
+#         audio = MetaArray(file = audiodwnf, subset=(slice(0,2), slice(64,128), slice(64,128)))
+#         audiotime = audio.axisValues('Time').astype('float32')
+#         audiomin = np.min(audiotime) + diffdwn
+#         audiomax = np.max(audiotime) + diffdwn
         
-        print 'audiomin', audiomin
-        print 'audiomax', audiomax
+#         print 'audiomin', audiomin
+#         print 'audiomax', audiomax
 
-        adjustedtime = rawtimes[np.logical_and(rawtimes <= audiomax+.5, rawtimes >= audiomin)]
-        frame_start=np.amin(np.where(rawtimes >= audiomin))
-        frame_end=np.amax(np.where(rawtimes <= audiomax+0.5))
-        adjustedimagedata = rawimageData[frame_start:frame_end]
+#         adjustedtime = rawtimes[np.logical_and(rawtimes <= audiomax+.5, rawtimes >= audiomin)]
+#         frame_start=np.amin(np.where(rawtimes >= audiomin))
+#         frame_end=np.amax(np.where(rawtimes <= audiomax+0.5))
+#         adjustedimagedata = rawimageData[frame_start:frame_end]
  
-        self.times = [x-np.min(adjustedtime) for x in adjustedtime]
-        self.imageData2 = adjustedimagedata
-        self.imageData2=np.mean(self.imageData2, axis=0)
-        print 'size of imagedata', self.imageData2.shape
-        diffframes = self.imageData/self.imageData2
-        print 'mean:', diffframes.mean()
-        print 'std:', diffframes.std()
-        procimage=diffframes/diffframes.mean()/diffframes.std()
+#         self.times = [x-np.min(adjustedtime) for x in adjustedtime]
+#         self.imageData2 = adjustedimagedata
+#         self.imageData2=np.mean(self.imageData2, axis=0)
+#         print 'size of imagedata', self.imageData2.shape
+#         diffframes = self.imageData/self.imageData2
+#         print 'mean:', diffframes.mean()
+#         print 'std:', diffframes.std()
+        # procimage=diffframes/diffframes.mean()/diffframes.std()
 
-        self.avgframes = pg.image(diffframes, title='Average across frames')
-        self.diff_frames = pg.image(procimage, title='Normalized Average across frames')
-        self.imagebck=pg.image(rawimageData[10])
+        # self.avgframes = pg.image(diffframes, title='Average across frames')
+        # self.diff_frames = pg.image(procimage, title='Normalized Average across frames')
+        # self.imagebck=pg.image(rawimageData[10])
         #self.avgframes = pg.image(procimage, title='Average across frames')
         return
 
