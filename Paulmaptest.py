@@ -64,7 +64,7 @@ fl2 = [4.0, 4.756, 5.656, 6.727, 8.0, 9.5, 11.3, 13.45, 16.0, 19.02, 22.62, 26.9
 # dictionary of data sets
 # Keys are first file #. Data are file name (up, down), wavelength, attn, period, date, frequency list, comment
 # 15 May 10:  used amber LED (noisy) for 610 illumination
-DB = {10: ('010', '011', 610, 15.0, 6.444, '15May10', fl1, 'thinned skull')} # lots of hf oscillations in image; phase map ???
+DB = {11: ('011', '004', 610, 20.0, 4.5, '09Feb16', fl1, 'thinned skull')}
 DB[14] = ('014', '021', 610, 15.0, 4.25, '09Feb16', fl1, 'thinned skull') #Tessa's data
 #DB[18] = ('018', '019', 610, 15.0, 6.444, '15May10', fl1, 'dura, deeper focus')
 DB[22] = ('022', '023', 610, 8.0, 6.444, '15May10', fl1, 'dura, deeper focus')
@@ -394,7 +394,7 @@ class testAnalysis():
 # OLD: stsci not available anymore
 #               box_2D_kernel = astropy.convolve.Box2DKernel(2*n_PtsPerCycle)
 #               box_2D_kernel = Box2DKernel(5)
-                box_2D_kernel = Box1DKernel(n_PtsPerCycle)
+                box_2D_kernel = Box1DKernel(2*n_PtsPerCycle)
 #               print self.imageData[:,i,j]
 #               print len(self.imageData[:,i,j])
 #               print box_2D_kernel
@@ -520,7 +520,7 @@ class testAnalysis():
             #scipy.ndimage.gaussian_filter(self.phaseImage2, 2, order=0, output=self.phaseImage2, mode='reflect')
             np1 = scipy.ndimage.gaussian_filter(self.phaseImage1, gfilt, order=0, mode='reflect')
             np2 = scipy.ndimage.gaussian_filter(self.phaseImage2, gfilt, order=0, mode='reflect')
-            dphase = np1 + np2
+            dphase = np1 - np2
             #dphase = self.phaseImage1 - self.phaseImage2
            
             #scipy.ndimage.gaussian_filter(dphase, 2, order=0, output=dphase, mode='reflect')
@@ -646,12 +646,12 @@ class testAnalysis():
             #scipy.ndimage.gaussian_filter(self.phaseImage2, 2, order=0, output=self.phaseImage2, mode='reflect')
             np1 = scipy.ndimage.gaussian_filter(self.phaseImage1, gfilt, order=0, mode='reflect')
             np2 = scipy.ndimage.gaussian_filter(self.phaseImage2, gfilt, order=0, mode='reflect')
-            dphase = np1 + np2
-            # for i in range(dphase.shape[0]):
-            #     for j in range(dphase.shape[1]):
-            #         #for k in range(dphase.shape[2]):
-            #         if dphase[i,j]<0:
-            #             dphase[i,j] = dphase[i,j]+2*np.pi
+            dphase = np1 - np2
+            for i in range(dphase.shape[0]):
+                for j in range(dphase.shape[1]):
+                    #for k in range(dphase.shape[2]):
+                    if dphase[i,j]<0:
+                        dphase[i,j] = dphase[i,j]+2*np.pi
                     # if dphase[i,j]<2*np.pi/5:
                     #     dphase[i,j]=0
                     # elif dphase[i,j]<4*np.pi/5:

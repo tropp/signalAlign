@@ -73,58 +73,28 @@ fl1 = [3000*x for x in freqlist]
 print 'fl1:', fl1
 
 # Keys are first file #. Data are file name (up, down), wavelength, attn, period, date, frequency list, comment
-DB = {11: ('011', '013', 610, 20.0, 4.25, '08Jan16', fl, 'thinned skull')}
-#DB[19] = ('019','018', 610, 15.0, 4.25, '13Jan16', fl, 'thinned skull')
-#DB[4] = ('004','002', 610, 20.0, 4.25, '13Jan16', fl, 'thinned skull')
-DB[5] =  ('005','003',610, 20.0, 4.25, '13Jan16', fl, 'thinned skull')
-#DB[7] = ('007', '008', 610, 120.0, 4.25, '13Jan16', fl, 'thinned skull')
-DB[12] = ('012', '011', 610, 120.0, 4.25, '13Jan16', fl, 'thinned skull') #sound unplugged
-DB[4] = ('004','005', 610, 20.0, 4.25, '01Feb16', fl, 'thinned skull')
-DB[7] = ('007','008', 610, 20.0, 4.25, '01Feb16', fl, 'thinned skull')
-DB[3] = ('003','002', 610, 20.0, 4.25, '01Feb16', fl, 'thinned skull')
-DB[20] = ('020','019', 610, 30.0, 4.25, '01Feb16', fl, 'thinned skull')# noise for 12.75 seconds
-DB[33] = ('033','024', 610, 10.0, 4.5, '09Feb16', fl, 'thinned skull')# noise for 12.75 seconds
-
-DB[12] = ('011','012', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
-DB[10] = ('010','013', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
-DB[9] = ('009','017', 610, 10.0, 4.5, '09Feb16', fl, 'thinned skull')
-DB[8] = ('008','015', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
-DB[7] = ('007','016', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
-DB[27] = ('027','024', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
-
-DB[11] = ('011','012', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
-DB[5] = ('005','002', 610, 5.0, 4.25, '01Feb16', fl, 'thinned skull')
-DB[18] = ('018','015', 610, 5.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[19] = ('019','014', 610, 5.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[14] = ('014', '021', 610, 20.0, 4.5, '09Feb16', fl1, 'thinned skull') #Tessa's data
-
-# # Timestamps.  Keys are first file number.  Data are videoup, audioup, videodown, audiodown start times
-# timestamp = {11: (1452278712.382, 1452278713.787, 1452278790.432, 1452278791.642)}
-# timestamp[19] =  (1452713884.635, 1452713885.25, 1452713843.612, 1452713844.84)
-# timestamp[4] = (1452712481.09, 1452712482.456, 1452712288.048, 1452712289.394)             
-# timestamp[5] = (1452712556.376, 1452712557.921, 1452712371.056, 1452712373.436)
-# timestamp[7] = (1452712735.321, 1452712736.654, 1452712778.485, 1452712779.631)
-# timestamp[12] = (1452713276.699, 1452713277.68, 1452713150.485, 1452713151.894)
+DB = {11: ('011', '004', 610, 20.0, 4.25, '09Feb16', fl, 'thinned skull')}
+DB[12] = ('012', '002', 610, 30.0, 4.25, '09Feb16', fl, 'thinned skull')
+DB[13] = ('013', '022', 610, 30.0, 4.25, '09Feb16', fl, 'thinned skull')
+DB[14] = ('014', '021', 610, 20.0, 4.25, '09Feb16', fl, 'thinned skull')
+DB[15] = ('015', '023', 610, 10.0, 4.25, '09Feb16', fl, 'thinned skull')
+DB[16] = ('016', '019', 610, 5.0, 4.25, '09Feb16', fl, 'thinned skull')
+DB[17] = ('017', '018', 610, 15.0, 4.25, '09Feb16', fl, 'thinned skull')
+#Note:  Files 005-010 are SAM files, maybe included later
+DB[29] = ('029', '028', 610, 30.0, 4.5, '09Feb16', fl1, 'thinned skull')
+DB[30] = ('030', '027', 610, 25.0, 4.5, '09Feb16', fl1, 'thinned skull')
+DB[31] = ('031', '026', 610, 20.0, 4.5, '09Feb16', fl1, 'thinned skull')
+DB[32] = ('032', '025', 610, 15.0, 4.5, '09Feb16', fl1, 'thinned skull') #Tessa's data
+DB[33] = ('033', '024', 610, 10.0, 4.5, '09Feb16', fl1, 'thinned skull')
+DB[34] = ('030', '034', 610, 25.0, 4.5, '09Feb16', fl1, 'thinned skull')
+#Note:  Files 035-041 are SAM, NBN and Noise files
            
 
 homedir = os.getenv('HOME')
-videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.09_000/animal_000/video_'
-basepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.09_000/animal_000/'
-audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.09_000/animal_000/Sound_Stimulation_'
-# videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/Second_round/video_'
-# basepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/Second_round/'
-# audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/Second_round/Sound_Stimulation_video_'
-###  Don't forget to change the backgrounf file!
+videobasepath = '/Volumes/TRoppData/data/Intrinsic_data/2016.02.09_000/animal_000/video_'
+basepath = '/Volumes/TRoppData/data/Intrinsic_data/2016.02.09_000/animal_000/'
+audiobasepath = '/Volumes/TRoppData/data/Intrinsic_data/2016.02.09_000/animal_000/Sound_Stimulation_'
 
-# videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/First_round/video_'
-# basepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/First_round/'
-# audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/First_round/Sound_Stimulation_video_'
-# videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.01.13_000/video_'
-# basepath = '/Volumes/TRoppData/data/Intrinsic/2016.01.13_000/'
-# audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.01.13_000/Sound_Stimulation_video_'
-# videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.01.08_000/Intrinsic_Mapping/video_'
-# basepath = '/Volumes/TRoppData/data/Intrinsic/2016.01.08_000/Intrinsic_Mapping/'
-# audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.01.08_000/Intrinsic_Mapping/Sound_Stimulation_video_'
 class testAnalysis():
     def __init__(self):
         global d
@@ -324,9 +294,9 @@ class testAnalysis():
             print 'audiomin', audiomin
             print 'audiomax', audiomax
 
-            adjustedtime = rawtimes[np.logical_and(rawtimes <= audiomax+5, rawtimes >= audiomin)]
+            adjustedtime = rawtimes[np.logical_and(rawtimes <= audiomax+4, rawtimes >= audiomin)]
             
-            adjustedimagedata = rawimageData[np.logical_and(rawtimes <= audiomax+5, rawtimes >= audiomin)]
+            adjustedimagedata = rawimageData[np.logical_and(rawtimes <= audiomax+4, rawtimes >= audiomin)]
             # print 'adjtime', adjustedtime
             self.times = [x-np.min(adjustedtime) for x in adjustedtime]
             self.imageData = adjustedimagedata
@@ -335,9 +305,9 @@ class testAnalysis():
             # print 'shape of image data', np.shape(self.imageData)
 
             #analyze a quarter of the image
-            xcut = (self.imageData.shape[1]+1)/4
-            ycut = (self.imageData.shape[2]+1)/4
-            self.imageData=self.imageData[:,2*xcut-1:3*xcut-1,ycut-1:2*ycut-1]
+            #xcut = (self.imageData.shape[1]+1)/8
+            #ycut = (self.imageData.shape[2]+1)/8
+            #self.imageData=self.imageData[:,3*xcut-1:7*xcut-1,ycut-1:7*ycut-1]
             im=[]
             if file is videoupf:
                upflag = 1
@@ -378,7 +348,7 @@ class testAnalysis():
         n_Periods = int(numpy.floor(maxt/self.imagePeriod)) # how many full periods in the image set?
         if self.nCycles > 0 and self.nCycles < n_Periods:
             n_Periods = self.nCycles
-        n_PtsPerCycle = int(numpy.floor(self.imagePeriod/dt)); # estimate image points in a stimulus cycle
+        n_PtsPerCycle = int(numpy.floor(self.imagePeriod/dt)) # estimate image points in a stimulus cycle
         ndt = self.imagePeriod/n_PtsPerCycle
         self.imageData = self.imageData[range(0, n_Periods*n_PtsPerCycle),:,:] # reduce to only what we need
         self.timebase = numpy.arange(0, self.imageData.shape[0]*dt, dt)# reduce data in blocks by averaging
@@ -437,7 +407,10 @@ class testAnalysis():
         #print 'reject', reject
         trej = numpy.array(self.timebase[reject])
         LPF = 0.2/dt
-        lfilt = SignalFilter_LPFBessel(scipy.signal.detrend(zid, axis=0), LPF, samplefreq=1.0/dt , NPole = 8, reduce = False)
+        print 'LPF', LPF
+        print 'dt', dt
+        lfilt = SignalFilter_LPFBessel(scipy.signal.detrend(zid, axis=0), 1, samplefreq=1.0/dt , NPole = 8, reduce = False)
+        #lfilt = SignalFilter_LPFBessel(scipy.signal.detrend(zid, axis=0), LPF, samplefreq=1.0/dt , NPole = 8, reduce = False)
         if HAVE_MPL:
             p1=pylab.subplot(3,1,1)
             p1.plot(self.timebase, self.imageData[:,ipx,ipy] - numpy.mean(self.imageData[:,ipx,ipy]), 'mo-') # prior to any correction
@@ -466,7 +439,8 @@ class testAnalysis():
         # subtract slow fluctuations
         flpf = float(LPF)
         sf = float(1.0/dt)
-        wn = [flpf/(sf/2.0)]
+        wn=0.1
+        #wn = [flpf/(sf/2.0)]
         NPole=8
         filter_b,filter_a=scipy.signal.bessel(
                 NPole,
@@ -480,7 +454,7 @@ class testAnalysis():
 # OLD: stsci not available anymore
 #               box_2D_kernel = astropy.convolve.Box2DKernel(2*n_PtsPerCycle)
 #               box_2D_kernel = Box2DKernel(5)
-                box_2D_kernel = Box1DKernel(n_PtsPerCycle)
+                box_2D_kernel = Box1DKernel(2*n_PtsPerCycle)
 #               print self.imageData[:,i,j]
 #               print len(self.imageData[:,i,j])
 #               print box_2D_kernel
@@ -488,7 +462,9 @@ class testAnalysis():
 #                self.imageData[:,i,j] = self.imageData[:,i,j] - scipy.stsci.convolve.boxcar(self.imageData[:,i,j], (2*n_PtsPerCycle,)) 
                 self.imageData[:,i,j]=scipy.signal.lfilter(filter_b, filter_a, scipy.signal.detrend(self.imageData[:,i,j], axis=0)) # filter the incoming signal
         zid = self.imageData[:,ipx,ipy]
-        lfilt = SignalFilter_LPFBessel(scipy.signal.detrend(zid, axis=0), LPF, samplefreq=1.0/dt , NPole = 8, reduce = False)
+        # lfilt = SignalFilter_LPFBessel(scipy.signal.detrend(zid, axis=0), LPF, samplefreq=1.0/dt , NPole = 8, reduce = False)
+        #lfilt = SignalFilter_LPFBessel(scipy.signal.detrend(zid, axis=0), 0.1, samplefreq=1.0/dt , NPole = 8, reduce = False)
+        
         if HAVE_MPL:
             p1.plot(self.timebase, zid - numpy.mean(zid), 'r-')
             p1.plot(self.timebase, lfilt - numpy.mean(lfilt), 'c-')
@@ -732,13 +708,13 @@ class testAnalysis():
             #scipy.ndimage.gaussian_filter(self.phaseImage2, 2, order=0, output=self.phaseImage2, mode='reflect')
             np1 = scipy.ndimage.gaussian_filter(self.phaseImage1, gfilt, order=0, mode='reflect')
             np2 = scipy.ndimage.gaussian_filter(self.phaseImage2, gfilt, order=0, mode='reflect')
-            dphase = np1 + np2
-            for i in range(dphase.shape[0]):
-                for j in range(dphase.shape[1]):
-                    #for k in range(dphase.shape[2]):
-                    if dphase[i,j]<0:
-                        dphase[i,j] = dphase[i,j]+2*np.pi
-                    # if dphase[i,j]<2*np.pi/5:
+            dphase = (np1 - np2)/2
+            # for i in range(dphase.shape[0]):
+            #     for j in range(dphase.shape[1]):
+            #         #for k in range(dphase.shape[2]):
+            #         if dphase[i,j]<0:
+            #             dphase[i,j] = dphase[i,j]+2*np.pi
+            #         # if dphase[i,j]<2*np.pi/5:
                     #     dphase[i,j]=0
                     # elif dphase[i,j]<4*np.pi/5:
                     #     dphase[i,j]=1

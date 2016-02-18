@@ -33,7 +33,7 @@ import scipy.ndimage
 import pyqtgraph as pg #added to deal with plottng issues TFR 11/13/15
 #import scipy.stsci.convolve
 #import astropy.convolution
-from astropy.convolution import convolve_fft, convolve, Box2DKernel, Box1DKernel
+#from astropy.convolution import convolve_fft, convolve, Box2DKernel, Box1DKernel
 #from astropy import image
 import pickle
 import matplotlib
@@ -80,22 +80,19 @@ fl = [3000*x for x in freqlist]
 print 'fl:', fl
 
 # Keys are first file #. Data are file name (up, down), wavelength, attn, period, date, frequency list, comment
-DB = {0: ('000', '003', 610,50.0, 4.25, '05Feb16', fl, 'thinned skull')}
-DB[1] = ('001','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[2] = ('002','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[3] = ('003','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[4] = ('004','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[5] = ('005','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[6] = ('006','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[7] = ('007','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB = {5: ('005', '003', 610,50.0, 4.25, '05Feb16', fl, 'thinned skull')}
+DB[6] = ('006','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[7] = ('007','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
 DB[8] = ('008','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[9] = ('009','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[10] = ('010','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[11] = ('011','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[12]= ('012','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[13] = ('013','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[36] = ('036', '037', 610, 15.0, 4.25, '09Feb16', fl, 'thinned skull')
-DB[39] = ('039', '037', 610, 15.0, 4.25, '09Feb16', fl, 'thinned skull')
+DB[9] = ('009','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[10] = ('010','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[35] = ('035','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[36] = ('036','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[37] = ('037','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[38] = ('038','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[39] = ('039','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[40] = ('040','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[41]= ('041','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
 
 
 # # Timestamps.  Keys are first file number.  Data are videoup, audioup, videodown, audiodown start times
@@ -108,9 +105,9 @@ DB[39] = ('039', '037', 610, 15.0, 4.25, '09Feb16', fl, 'thinned skull')
            
 
 homedir = os.getenv('HOME')
-videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.09_000/animal_000/video_'
-basepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.09_000/animal_000/'
-audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.09_000/animal_000/Sound_Stimulation_'
+videobasepath = '/Volumes/TRoppData/data/Intrinsic_data/2016.02.09_000/animal_000/video_'
+basepath = '/Volumes/TRoppData/data/Intrinsic_data/2016.02.09_000/animal_000/'
+audiobasepath = '/Volumes/TRoppData/data/Intrinsic_data/2016.02.09_000/animal_000/Sound_Stimulation_'
 # videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/Second_round/video_'
 # basepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/Second_round/'
 # audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/Second_round/Sound_Stimulation_video_'
@@ -271,8 +268,7 @@ class testAnalysis():
         rawtimes = im.axisValues('Time').astype('float32')
 
         rawimageData = im.view(np.ndarray).astype('float32')
-#  
-
+#   
         #reads the timestamps from the files
         indexFile = configfile.readConfigFile(basepath+'.index') 
         timestampup = indexFile.__getitem__('video_'+DB[options.fdict][0]+'.ma')[u'__timestamp__']
@@ -294,7 +290,7 @@ class testAnalysis():
 
         adjustedtime = rawtimes[np.logical_and(rawtimes <= audiomax+5, rawtimes >= audiomin)]
         frame_start=np.amin(np.where(rawtimes >= audiomin))
-        frame_end=np.amax(np.where(rawtimes <= audiomax+0.5))
+        frame_end=np.amax(np.where(rawtimes <= audiomax+4))
         adjustedimagedata = rawimageData[frame_start:frame_end]
         #adjustedimagedata = rawimageData[np.logical_and(rawtimes <= audiomax+.5, rawtimes >= audiomin)]
  

@@ -87,6 +87,7 @@ DB = {11: ('011', '004', 610, 20.0, 4.25, '09Feb16', fl, 'thinned skull')}
 DB[12] = ('012', '002', 610, 30.0, 4.25, '09Feb16', fl, 'thinned skull')
 DB[13] = ('013', '022', 610, 30.0, 4.25, '09Feb16', fl, 'thinned skull')
 DB[14] = ('014', '021', 610, 20.0, 4.25, '09Feb16', fl, 'thinned skull')
+DB[20] = ('015', '020', 610, 10.0, 4.25, '09Feb16', fl, 'thinned skull')
 DB[15] = ('015', '023', 610, 10.0, 4.25, '09Feb16', fl, 'thinned skull')
 DB[16] = ('016', '019', 610, 5.0, 4.25, '09Feb16', fl, 'thinned skull')
 DB[17] = ('017', '018', 610, 15.0, 4.25, '09Feb16', fl, 'thinned skull')
@@ -275,13 +276,23 @@ class testAnalysis():
             # #print 'optioins.dict', options.fdict[0]
 
             #reads the timestamps from the files
+
             indexFile = configfile.readConfigFile(basepath+'.index') 
             timestampup = indexFile.__getitem__('video_'+DB[options.fdict][0]+'.ma')[u'__timestamp__']
             timestampdown = indexFile.__getitem__('video_'+DB[options.fdict][1]+'.ma')[u'__timestamp__']
             audioupindex = configfile.readConfigFile(audiobasepath+DB[options.fdict][0]+'/.index')
             audioupstamp = audioupindex.__getitem__(u'.')[u'__timestamp__'] 
+            #audioupstamp = audioupindex.__getitem__('DaqDevice.ma')[u'__timestamp__'] - 12.8
             audiodownindex = configfile.readConfigFile(audiobasepath+DB[options.fdict][1]+'/.index')
             audiodownstamp = audiodownindex.__getitem__(u'.')[u'__timestamp__'] 
+            #audiodownstamp = audiodownindex.__getitem__('DaqDevice.ma')[u'__timestamp__'] - 12.8
+            # indexFile = configfile.readConfigFile(basepath+'.index') 
+            # timestampup = indexFile.__getitem__('video_'+DB[options.fdict][0]+'.ma')[u'__timestamp__']
+            # timestampdown = indexFile.__getitem__('video_'+DB[options.fdict][1]+'.ma')[u'__timestamp__']
+            # audioupindex = configfile.readConfigFile(audiobasepath+DB[options.fdict][0]+'/.index')
+            # audioupstamp = audioupindex.__getitem__(u'.')[u'__timestamp__'] 
+            # audiodownindex = configfile.readConfigFile(audiobasepath+DB[options.fdict][1]+'/.index')
+            # audiodownstamp = audiodownindex.__getitem__(u'.')[u'__timestamp__'] 
            
             diffup = audioupstamp - timestampup
             diffdown = audiodownstamp - timestampdown 
@@ -308,16 +319,12 @@ class testAnalysis():
             # print 'adjtime', adjustedtime
             self.times = [x-np.min(adjustedtime) for x in adjustedtime]
             self.imageData = adjustedimagedata
-            #gaussian filter before averaging over trials
-            for i in range(self.imageData.shape[0]):
+            
+            self.slidingAverage(window =11)
+            self.fac_lift(period=4.25)
+            
 
-                stdv1=np.std(self.imageData[i])
-            #stdv2=np.std(self.imageData, axis=1)
-            #stdv3=np.std(self.imageData, axis=2)
-            #print 'stv1,2,3', stdv1
-                self.imageData[i] = scipy.ndimage.gaussian_filter(self.imageData[i],2*stdv1, order=0, mode='reflect')
-
-            self.imageData = fac_lift(self.imageData, self.times, period=4.5)
+            
             #print 'self.times:', self.times
             # print 'length of self.times', np.shape(self.times)
             # print 'shape of image data', np.shape(self.imageData)
@@ -337,126 +344,36 @@ class testAnalysis():
 
         return
 
-    def subtract_Background(self, diffup=0.005):
-        #loading background data
-        print 'running subtractBackground'
-
-        bckfile = videobasepath + '008.ma'
-        bckaudio = audiobasepath + '008/DaqDevice.ma'
-
-        # bckfile = videobasepath + '011.ma'
-        # bckaudio = audiobasepath + '011/DaqDevice.ma'
-        
-        try:
-            im = MetaArray(file = bckfile,  subset=(slice(0,2), slice(64,128), slice(64,128)))
-        except:
-            print 'no background file!'
-        #correct for timing differences
-        audio = []
-        audio = MetaArray(file = bckaudio, subset=(slice(0,2), slice(64,128), slice(64,128)))
-        audiotime = audio.axisValues('Time').astype('float32')
-
-        audiomin = np.min(audiotime) + diffup
-       
-        audiomax = np.max(audiotime) + diffup
-        rawtimes = im.axisValues('Time').astype('float32')
-        adjustedtime = rawtimes[np.logical_and(rawtimes <= audiomax+.5, rawtimes >= audiomin)]
-        bckimagedata = im[np.logical_and(rawtimes <= audiomax, rawtimes >= audiomin)]
-        raw=self.imageData
-        #check that the background image and the data are the same shape and average
-        #then subtract the average from the stimulated data
-        getout = fac_lift(bckimagedata,adjustedtime)
-        bckimagedata=getout
-        getout2 = fac_lift(raw, adjustedtime)
-        self.imageData=getout2
-        print 'shape of background', bckimagedata.shape
-        print 'shape of imageData', self.imageData.shape
-        if bckimagedata.shape[0] <= self.imageData.shape[0]:
-            print 'image is longer'
-            stop = bckimagedata.shape[0]
-            print 'stop'
-            self.imageData=self.imageData[: stop,:,:,:]
-            print 'stop2'
-            subtractor = np.zeros(bckimagedata.shape, float)
-            diffimage = np.zeros(bckimagedata.shape, float)
-            subtractor = np.mean(np.array([self.imageData,bckimagedata]), axis=0)
-            #diffimage=sub_func(self.imageData, subtractor)
-            diffimage = self.imageData - subtractor
-            print 'stop 3'     
-        else:
-            print 'error! image is shorter, fix this code!'
-        diffimage = scipy.signal.detrend(diffimage, axis=0)    
-        self.imageData = diffimage    
-        return
-
+    
     
     def Analysis_FourierMap_TFR(self, period = 4.5, target = 1, mode=0, bins = 1, up=1):
         global D
         D = []
         self.DF = []
+        frameshape = np.shape(self.imageData)
         self.avgimg = []
         self.stdimg = []
+        # ampimg=np.zeros((frameshape[1],frameshape[2])).astype('float32')
+        # phaseimg=np.zeros((frameshape[1],frameshape[2])).astype('float32')
         self.nFrames =self.imageData.shape[0]
-        self.imagePeriod = 0
-        # if HAVE_MPL:
-        #     pylab.figure(2)
-        #self.imageData = self.imageData.squeeze()
- 
-#         print "now calculating mean"
-#         # excluding bad trials
-#         trials = range(0, n_Periods)
-#         reject = reject[0]
-#         # print 'trials', trials
-#         # print 'reject', reject
-#         # print 'nptpercycle', n_PtsPerCycle
-
-#         #N.B.- Commenting this out seems to resolve issues.  Figure out why!
-#         # for i in range(0,len(reject)):
-#         #     t = reject[i]/n_PtsPerCycle
-#         #     if t in trials:
-#         #         trials.remove(t)
-
-#         print "retaining trials: ", trials
-#         D = numpy.mean(self.imageData[trials,:,:,:], axis=0).astype('float32') # /divider # get mean of the folded axes.
-#         print "mean calculated, now detrend and fft"
-#         # detrend before taking fft
-        print 'imageData dimensions', np.shape(self.imageData)
-        D = scipy.signal.detrend(self.imageData, axis=0)
-#         # calculate FFT and get amplitude and phase
-#         self.DF = numpy.fft.fft(D, axis = 0)
-        #self.reshapeImage()
-##################filtering
-#         dt = numpy.mean(numpy.diff(self.times))
-        #D=numpy.mean(self.imageData, axis = 0)
-#         LPF = 0.2/dt
-#         flpf = float(LPF)
-#         sf = float(1.0/dt)
-#         wn = [flpf/(sf/2.0)]
-#         NPole=8
-#         filter_b,filter_a=scipy.signal.bessel(
-#                 NPole,
-#                 wn,
-#                 btype = 'low',
-#                 output = 'ba')
-#         print "boxcar LPF"
-#         for i in range(0, self.imageData.shape[1]):
-#             for j in range(0, self.imageData.shape[2]):
-#                # self.imageData[:,i,j] = self.imageData[:,i,j] - self.timeavg
-# # OLD: stsci not available anymore
-# #               box_2D_kernel = astropy.convolve.Box2DKernel(2*n_PtsPerCycle)
-# #               box_2D_kernel = Box2DKernel(5)
-#                 #box_2D_kernel = Box1DKernel(5)
-# #               print self.imageData[:,i,j]
-# #               print len(self.imageData[:,i,j])
-# #               print box_2D_kernel
-#                 #self.imageData[:,i,j] = self.imageData[:,i,j] - convolve_fft(self.imageData[:,i,j], box_2D_kernel) 
-# #                self.imageData[:,i,j] = self.imageData[:,i,j] - scipy.stsci.convolve.boxcar(self.imageData[:,i,j], (2*n_PtsPerCycle,)) 
-#                 self.imageData[:,i,j]=scipy.signal.lfilter(filter_b, filter_a, scipy.signal.detrend(self.imageData[:,i,j], axis=0)) # filter the incoming signal
-    
- #       print 'shape of D', D.shape
-        self.DF = numpy.fft.fft(D, axis = 0)
-        ampimg = numpy.abs(self.DF[1,:,:]).astype('float32')
-        phaseimg = numpy.angle(self.DF[1,:,:]).astype('float32')
+        #self.imagePeriod = 0
+        dt = numpy.mean(numpy.diff(self.times))
+        print 'shape of imageData', np.shape(self.imageData)
+        n_PtsPerCycle = self.imageData.shape[0]
+        print 'nptpercyle', n_PtsPerCycle
+        # for i in range(0, self.imageData.shape[1]):
+        #     for j in range(0, self.imageData.shape[2]):
+        #         # box_1D_kernel = Box1DKernel(2*n_PtsPerCycle)
+        #         box_1D_kernel = Box1DKernel(2*n_PtsPerCycle)
+        #         self.imageData[:,i,j] = self.imageData[:,i,j] - convolve_fft(self.imageData[:,i,j], box_1D_kernel) 
+        self.DF = numpy.fft.fft(self.imageData,axis=0)
+        ampimg = numpy.abs(self.DF[10,:,:]).astype('float32')
+        phaseimg = numpy.angle(self.DF[10,:,:]).astype('float32')
+        # print 'shape of self.DF', np.shape(self.DF)
+        # for i in range(self.DF.shape[1]):
+        #     for j in range(self.DF.shape[2]):
+        #         ampimg[i,j] = numpy.fabs(self.DF[:,i,j])
+        #         phaseimg[i,j] = numpy.fangle(self.DF[:,i,j])
         if target == 1:
             f = open('img_phase1.dat', 'w')
             pickle.dump(phaseimg, f)
@@ -574,43 +491,22 @@ class testAnalysis():
         color = np.array([[0,0,0,255], [255,128,0,255], [255,255,0,255],[0,0,0,255]], dtype=np.ubyte)
         maps = pg.ColorMap(pos, color)
         lut = maps.getLookupTable(0.0, 1.0, 256)
-        # # ## Set up plots/images in window
 
-        # self.view = pg.GraphicsView()
-        # l = pg.GraphicsLayout(border=(100,100,100))
-        # self.view.setCentralItem(l)
-        # self.amp1View = l.addViewBox(lockAspect=True)
-        # self.amp2View = l.addViewBox(lockAspect=True)
-        # self.waveformPlot = l.addPlot(title="Waveforms")
-        # l.nextRow()
-        # self.phase1View = l.addViewBox(lockAspect=True)
-        # self.phase2View = l.addViewBox(lockAspect=True)
-        # self.fftPlot = l.addPlot(title="FFTs")
-        # self.phiView = l.addViewBox(lockAspect=True)
 
         global D
         max1 = numpy.amax(self.amplitudeImage1)
         if target > 1:
             max1 = numpy.amax([max1, numpy.amax(self.amplitudeImage2)])
         max1 = 10.0*int(max1/10.0)
-        # pylab.figure(1)
-        # pylab.subplot(2,3,1)
-        # pylab.title('Amplitude Map1')
-        # #scipy.ndimage.gaussian_filter(self.amplitudeImage1, 2, order=0, output=self.amplitudeImage1, mode='reflect')
-        ampimg = scipy.ndimage.gaussian_filter(self.amplitudeImage1,gfilt, order=0, mode='reflect')
-        #self.amp1View.addItem(pg.ImageItem(ampimg))
-        self.amp1 = pg.image(ampimg, title="Amplitude Map 1", levels=(0.0, max1))
-        #imga1 = pylab.imshow(ampimg)
-        #pylab.colorbar()
-        #imga1.set_clim = (0.0, max1)
-        #pylab.subplot(2,3,4)
-        #pylab.title('Phase Map1')
-        phsmap=scipy.ndimage.gaussian_filter(self.phaseImage1, gfilt, order=0,mode='reflect')
-        #self.phase1View.addItem(pg.ImageItem(phsmap))
-        self.phs1 = pg.image(phsmap, title='Phase Map 1')
-        #self.phs1.getHistogramWidget().item.gradient.
-        #imgp1 = pylab.imshow(phsmap, cmap=matplotlib.cm.hsv)
-        #pylab.colorbar()
+  
+        #ampimg = scipy.ndimage.gaussian_filter(self.amplitudeImage1,gfilt, order=0, mode='reflect')
+
+        self.amp1 = pg.image(self.amplitudeImage1, title="Amplitude Map 1", levels=(0.0, max1))
+ 
+        #phsmap=scipy.ndimage.gaussian_filter(self.phaseImage1, gfilt, order=0,mode='reflect')
+
+        self.phs1 = pg.image(self.phaseImage1, title='Phase Map 1', levels=(-np.pi,np.pi))
+
 
         print "plotmaps Block 1"
         print "mode:", mode
@@ -619,22 +515,10 @@ class testAnalysis():
             self.fftPlt = pg.plot(title = 'FFTs')
         
         if mode == 0:
-            #pylab.subplot(2,3,3)
 
-            # for i in range(0, self.nPhases):
-            #     self.wavePlt.plot(ta.n_times, D[:,5,5].view(ndarray))
-            #     #pylab.plot(ta.n_times, D[:,5,5].view(ndarray))
-            #     #pylab.plot(self.n_times, D[:,i*55+20, 60])
-            #     #pylab.hold('on')
-            # #pylab.title('Waveforms')
-
-            #pylab.subplot(2,3,6)
             for i in range(0, self.nPhases):
                 self.fftPlt.plot(ta.n_times, self.DF[:,5,5].view(ndarray))
-                #pylab.plot(ta.n_times, self.DF[:,5,5].view(ndarray))
-                #pylab.plot(self.DF[:,i*55+20, 60])
-                #pylab.hold('on')
-            #pylab.title('FFTs')
+
 
         print "plotmaps Block 2"
 
@@ -643,16 +527,16 @@ class testAnalysis():
             #pylab.title('Amplitude Map2')
             #scipy.ndimage.gaussian_filter(self.amplitudeImage2, 2, order=0, output=self.amplitudeImage2, mode='reflect')
             print 'amplitudeImage2,', np.shape(self.amplitudeImage2)
-            ampImg2 = scipy.ndimage.gaussian_filter(self.amplitudeImage2,gfilt, order=0, mode='reflect')
+            #ampImg2 = scipy.ndimage.gaussian_filter(self.amplitudeImage2,gfilt, order=0, mode='reflect')
             #imga2 = pylab.imshow(ampImg2)
             #self.amp2View.addItem(pg.ImageItem(ampImg2))
-            self.amp2 = pg.image(ampImg2, title='Amplitude Map 2', levels=(0.0, max1))
+            self.amp2 = pg.image(self.amplitudeImage2, title='Amplitude Map 2', levels=(0.0, max1))
             #imga2.set_clim = (0.0, max1)
             #pylab.colorbar()
             #pylab.subplot(2,3,5)
-            phaseImg2 = scipy.ndimage.gaussian_filter(self.phaseImage2, gfilt, order=0,mode='reflect') 
+            #phaseImg2 = scipy.ndimage.gaussian_filter(self.phaseImage2, gfilt, order=0,mode='reflect') 
             #self.phase2View.addItem(pg.ImageItem(phaseImg2))
-            self.phs2 = pg.image(phaseImg2, title="Phase Map 2", levels=(-np.pi/2.0, np.pi/2.0))
+            self.phs2 = pg.image(self.phaseImage2, title="Phase Map 2", levels=(-np.pi, np.pi))
             #imgp2 = pylab.imshow(phaseImg2, cmap=matplotlib.cm.hsv)
             #pylab.colorbar()
             #imgp2.set_clim=(-numpy.pi/2.0, numpy.pi/2.0)
@@ -660,9 +544,10 @@ class testAnalysis():
             ### doubled phase map
             #pylab.subplot(2,3,6)
             #scipy.ndimage.gaussian_filter(self.phaseImage2, 2, order=0, output=self.phaseImage2, mode='reflect')
-            np1 = scipy.ndimage.gaussian_filter(self.phaseImage1, gfilt, order=0, mode='reflect')
-            np2 = scipy.ndimage.gaussian_filter(self.phaseImage2, gfilt, order=0, mode='reflect')
-            dphase = (np1 + np2)/2
+            #np1 = scipy.ndimage.gaussian_filter(self.phaseImage1, gfilt, order=0, mode='reflect')
+            #np2 = scipy.ndimage.gaussian_filter(self.phaseImage2, gfilt, order=0, mode='reflect')
+            #dphase = (np1 + np2)/2
+            dphase = (self.phaseImage1+self.phaseImage2)/2
             print 'shape of dphase', dphase.shape
             #dphase = self.phaseImage1 - self.phaseImage2
             print 'min phase', np.amin(dphase)
@@ -696,7 +581,7 @@ class testAnalysis():
             gradlegend.setGradient(maps.getGradient())
             view.addItem(gradlegend)
             #self.phiView.addItem(pg.ImageItem(dphase))
-            self.phi = pg.image(dphase, title="2x Phi map", levels=(0, 2*np.pi))
+            self.phi = pg.image(dphase, title="2x Phi map", levels=(-np.pi, np.pi))
             
             #imgpdouble = pylab.imshow(dphase, cmap=matplotlib.cm.hsv)
             #pylab.title('2x Phi map')
@@ -790,15 +675,25 @@ class testAnalysis():
                     result[i, j, k] = indata[i, ji[j], ki[k]].mean()
         return result
 
-def fac_lift(goingin, times, period=4.5):
+    def slidingAverage(self, window=5):
+        sh=self.imageData.shape
+        avgsh =(sh[0]-window, sh[1], sh[2])
+        avgimg = np.zeros(avgsh)
+
+        for i in range(self.imageData.shape[0]-window):
+            avgimg[i] = np.mean(self.imageData[i:i+window-1],axis=0)
+        self.imageData = avgimg
+        return
+
+    def fac_lift(self, period=4.5):
     #averages the images over the given time period 
-        period = 4.5
+      
         print "reshape Starting"
 
-        maxt = times[-1] # find last image time
+        maxt = self.times[-1] # find last image time
         print "Duration of Image Stack: %9.3f s (%8.3f min)\n" % (maxt, maxt/60.0)
-        dt = numpy.mean(numpy.diff(times)) # get the mean dt
-        sh = np.shape(goingin)
+        dt = numpy.mean(numpy.diff(self.times)) # get the mean dt
+        sh = np.shape(self.imageData)
     # #determine the number of periods in the timeseries of the data
         period# image period in seconds.
 
@@ -807,14 +702,16 @@ def fac_lift(goingin, times, period=4.5):
         n_PtsPerCycle = int(numpy.floor(period/dt)); # estimate image points in a stimulus cycle
         ndt = period/n_PtsPerCycle
 
-        goingin = goingin[range(0, n_Periods*n_PtsPerCycle),:,:] # reduce to only what we need
-        times = numpy.arange(0,goingin.shape[0]*dt, dt)# reduce data in blocks by averaging
+        self.imageData = self.imageData[range(0, n_Periods*n_PtsPerCycle),:,:] # reduce to only what we need
+        times = numpy.arange(0,self.imageData.shape[0]*dt, dt)# reduce data in blocks by averaging
 
-        goingin = numpy.reshape(goingin,(n_Periods, n_PtsPerCycle, sh[1], sh[2])).astype('float32')
-        goingin = numpy.mean(goingin, axis=0)
+        self.imageData = numpy.reshape(self.imageData,(n_Periods, n_PtsPerCycle, sh[1], sh[2])).astype('float32')
+        self.imageData = numpy.mean(self.imageData, axis=0)
         
-        print 'shape of rescaled imagedata', goingin.shape
-        return goingin
+        print 'shape of rescaled imagedata', self.imageData.shape
+        #self.imageData = goingin
+        self.times = times
+        return 
 
 
 #### This function is copied from pylibrary.Utility. It is here locally so we don't need the dependencies that pylibrary requires
