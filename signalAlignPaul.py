@@ -300,6 +300,15 @@ class testAnalysis():
             # print 'adjtime', adjustedtime
             self.times = [x-np.min(adjustedtime) for x in adjustedtime]
             self.imageData = adjustedimagedata
+            background = rawimageData[5:25]
+            background = np.mean(background,axis=0)
+            print 'dimensions of background', np.shape(background)
+            pg.image(background, title='mean background')
+            subtracted = np.zeros(np.shape(self.imageData), float)
+            for i in range(self.imageData.shape[0]):
+                subtracted[i,:,:] = (self.imageData[i,:,:]-background)
+            subtracted=subtracted/subtracted.mean()
+            self.imageData = subtracted
             #print 'self.times:', self.times
             # print 'length of self.times', np.shape(self.times)
             # print 'shape of image data', np.shape(self.imageData)
@@ -314,7 +323,7 @@ class testAnalysis():
             else:
                upflag = 0
             #print 'target:', target
-            measuredPeriod=4.5
+            measuredPeriod=4.25
             #self.subtract_Background(diffup=diffup)
             self.Analysis_FourierMap(period=measuredPeriod, target = target,  bins=binsize, up=upflag)
         print 'target:', target
@@ -749,7 +758,7 @@ class testAnalysis():
                 Dm = self.avgimg[i*spr,i*spr] # diagonal run
                 wvfms=self.n_times, 100.0*(D[:,self.phasex[i]-1, self.phasey[i]]/Dm)
                 #pylab.plot(self.n_times, 100.0*(D[:,self.phasex[i], self.phasey[i]]/Dm))
-                self.wavePlt.plot(self.n_times, 100.0*(D[:,self.phasex[i]-1, self.phasey[i]]/Dm))
+                #self.wavePlt.plot(self.n_times, 100.0*(D[:,self.phasex[i]-1, self.phasey[i]]/Dm))
                 #pylab.hold('on')
                 #self.plotlist.append(pg.image(wvfms, title="Waveforms"))
                 #print "it worked"
