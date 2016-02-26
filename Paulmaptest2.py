@@ -446,14 +446,18 @@ class testAnalysis():
         # print "retaining trials: ", trials
         # D = numpy.mean(self.imageData[trials,:,:,:], axis=0).astype('float32') # /divider # get mean of the folded axes.
         # print "mean calculated, now detrend and fft"
-        D=self.imageData
+        D = self.imageData
         # detrend before taking fft
         D = scipy.signal.detrend(D, axis=0)
         # calculate FFT and get amplitude and phase
         self.DF = numpy.fft.fft(D, axis = 0)
-
-        ampimg = numpy.abs(self.DF[1,:,:]).astype('float32') #changing this to 3 instead of 1 (same next line)
+        self.DF = numpy.reshape(self.DF, (n_Periods, n_PtsPerCycle, sh[1], sh[2])).astype('float32')
+        self.DF = numpy.mean(self.DF[1:8,:,:], axis=0)
+        ampimg = numpy.abs(self.DF[1,:,:]).astype('float32') 
         phaseimg = numpy.angle(self.DF[1,:,:]).astype('float32')
+        print 'shpae of ampimg', np.shape(ampimg)
+        print 'shape of phaseimg', np.shape(phaseimg)
+
         if target == 1:
             f = open('img_phase1.dat', 'w')
             pickle.dump(phaseimg, f)
@@ -465,12 +469,14 @@ class testAnalysis():
             self.phaseImage1 = phaseimg
             f = open('DF1.mat', 'w')
             f.close()
-            scipy.io.savemat('/Users/tessajonneropp/Desktop/data/signalAlign/DF1.mat', mdict={'DF1': self.DF})
+            #scipy.io.savemat('/Users/tessajonneropp/Desktop/data/signalAlign/DF1.mat', mdict={'DF1': self.DF})
+            scipy.io.savemat('/Users/tjropp/Desktop/data/signalAlign/DF1.mat', mdict={'DF1': self.DF})
    
             f = open('times1.mat', 'w')
             f.close()
-            scipy.io.savemat('/Users/tessajonneropp/Desktop/data/signalAlign/times1.mat', mdict={'times1': self.n_times})
-          
+            #scipy.io.savemat('/Users/tessajonneropp/Desktop/data/signalAlign/times1.mat', mdict={'times1': self.n_times})
+            scipy.io.savemat('/Users/tjropp/Desktop/data/signalAlign/DF1.mat', mdict={'DF1': self.DF})
+   
         if target == 2:
             f = open('img_phase2.dat', 'w')
             pickle.dump(phaseimg, f)
@@ -482,11 +488,11 @@ class testAnalysis():
             self.phaseImage2 = phaseimg
             f = open('DF2.mat', 'w')
             f.close()
-            scipy.io.savemat('/Users/tessajonneropp/Desktop/data/signalAlign/DF2.mat', mdict={'DF2': self.DF})
+            scipy.io.savemat('/Users/tjropp/Desktop/data/signalAlign/DF2.mat', mdict={'DF2': self.DF})
 
             f = open('times2.mat','w')
             f.close()
-            scipy.io.savemat('/Users/tessajonneropp/Desktop/data/signalAlign/times2.mat', mdict={'times2': self.n_times})
+            scipy.io.savemat('/Users/tjropp/Desktop/data/signalAlign/times2.mat', mdict={'times2': self.n_times})
             
         print "fft calculated, data  saveddata"
         # save most recent calculation to disk
