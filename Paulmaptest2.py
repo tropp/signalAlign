@@ -428,31 +428,32 @@ class testAnalysis():
         
         print "now reshaping"
         self.n_times = numpy.arange(0, n_PtsPerCycle*ndt, ndt) # just one cycle
-        #self.n_freqs = (1/ndt)*numpy.arange(0,n_PtsPerCycle*ndt,(1/))
-        # put data into new shape to prepare for mean. "Folds" data by cycles". Also multiply to make average work
-        self.imageData = numpy.reshape(self.imageData, 
-                         (n_Periods, n_PtsPerCycle, sh[1], sh[2])).astype('float32')
+        # #self.n_freqs = (1/ndt)*numpy.arange(0,n_PtsPerCycle*ndt,(1/))
+        # # put data into new shape to prepare for mean. "Folds" data by cycles". Also multiply to make average work
+        # self.imageData = numpy.reshape(self.imageData, 
+        #                  (n_Periods, n_PtsPerCycle, sh[1], sh[2])).astype('float32')
 
-        print "now calculating mean"
-        # excluding bad trials
-        trials = range(0, n_Periods)
-        print 'trials', trials
-        print n_PtsPerCycle
-        reject = reject[0]
-        for i in range(0,len(reject)):
-            t = reject[i]/n_PtsPerCycle
-            #if t in trials:
-                #trials.remove(t)
-        print "retaining trials: ", trials
-        D = numpy.mean(self.imageData[trials,:,:,:], axis=0).astype('float32') # /divider # get mean of the folded axes.
-        print "mean calculated, now detrend and fft"
+        # print "now calculating mean"
+        # # excluding bad trials
+        # trials = range(0, n_Periods)
+        # print 'trials', trials
+        # print n_PtsPerCycle
+        # reject = reject[0]
+        # for i in range(0,len(reject)):
+        #     t = reject[i]/n_PtsPerCycle
+        #     #if t in trials:
+        #         #trials.remove(t)
+        # print "retaining trials: ", trials
+        # D = numpy.mean(self.imageData[trials,:,:,:], axis=0).astype('float32') # /divider # get mean of the folded axes.
+        # print "mean calculated, now detrend and fft"
+        D=self.imageData
         # detrend before taking fft
         D = scipy.signal.detrend(D, axis=0)
         # calculate FFT and get amplitude and phase
         self.DF = numpy.fft.fft(D, axis = 0)
 
-        ampimg = numpy.abs(self.DF[3,:,:]).astype('float32') #changing this to 3 instead of 1 (same next line)
-        phaseimg = numpy.angle(self.DF[3,:,:]).astype('float32')
+        ampimg = numpy.abs(self.DF[1,:,:]).astype('float32') #changing this to 3 instead of 1 (same next line)
+        phaseimg = numpy.angle(self.DF[1,:,:]).astype('float32')
         if target == 1:
             f = open('img_phase1.dat', 'w')
             pickle.dump(phaseimg, f)
