@@ -91,7 +91,7 @@ DB[34] = ('030', '034', 610, 25.0, 4.5, '09Feb16', fl1, 'thinned skull')
            
 
 homedir = os.getenv('HOME')
-videobasepath = '/Volumes/TRoppData/data/Intrinsic_data/2016.02.09_000/animal_000/video_'
+videobasepath = '/Volumes/TRoppData/data/Intrinsic_data/2016.02.09_000/animal_000/Camera/Frames_'
 basepath = '/Volumes/TRoppData/data/Intrinsic_data/2016.02.09_000/animal_000/'
 audiobasepath = '/Volumes/TRoppData/data/Intrinsic_data/2016.02.09_000/animal_000/Sound_Stimulation_'
 

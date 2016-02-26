@@ -80,19 +80,23 @@ fl = [3000*x for x in freqlist]
 print 'fl:', fl
 
 # Keys are first file #. Data are file name (up, down), wavelength, attn, period, date, frequency list, comment
-DB = {5: ('005', '003', 610,50.0, 4.25, '05Feb16', fl, 'thinned skull')}
-DB[6] = ('006','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[7] = ('007','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[8] = ('008','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[9] = ('009','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[10] = ('010','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[35] = ('035','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[36] = ('036','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[37] = ('037','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[38] = ('038','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[39] = ('039','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[40] = ('040','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
-DB[41]= ('041','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB = {0: ('000', '001', 610,50.0, 4.25, '05Feb16', fl, 'thinned skull')}
+DB[1] = ('001','002', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+DB[2] = ('002','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+
+# DB = {5: ('005', '003', 610,50.0, 4.25, '05Feb16', fl, 'thinned skull')}
+# DB[6] = ('006','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+# DB[7] = ('007','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+# DB[8] = ('008','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+# DB[9] = ('009','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+# DB[10] = ('010','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+# DB[35] = ('035','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+# DB[36] = ('036','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+# DB[37] = ('037','003', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+# DB[38] = ('038','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+# DB[39] = ('039','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+# DB[40] = ('040','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
+# DB[41]= ('041','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
 
 
 # # Timestamps.  Keys are first file number.  Data are videoup, audioup, videodown, audiodown start times
@@ -103,11 +107,11 @@ DB[41]= ('041','008', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
 # timestamp[7] = (1452712735.321, 1452712736.654, 1452712778.485, 1452712779.631)
 # timestamp[12] = (1452713276.699, 1452713277.68, 1452713150.485, 1452713151.894)
            
-
-homedir = os.getenv('HOME')
-videobasepath = '/Volumes/TRoppData/data/Intrinsic_data/2016.02.09_000/animal_000/video_'
-basepath = '/Volumes/TRoppData/data/Intrinsic_data/2016.02.09_000/animal_000/'
-audiobasepath = '/Volumes/TRoppData/data/Intrinsic_data/2016.02.09_000/animal_000/Sound_Stimulation_'
+basepath = '/Volumes/TRoppData/data/Intrinsic_data/2016.02.19_000/slice_000/SingleTone_Stimulation_'
+# homedir = os.getenv('HOME')
+# videobasepath = '/Volumes/TRoppData/data/Intrinsic_data/2016.02.09_000/animal_000/video_'
+# basepath = '/Volumes/TRoppData/data/Intrinsic_data/2016.02.09_000/animal_000/'
+# audiobasepath = '/Volumes/TRoppData/data/Intrinsic_data/2016.02.09_000/animal_000/Sound_Stimulation_'
 # videobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/Second_round/video_'
 # basepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/Second_round/'
 # audiobasepath = '/Volumes/TRoppData/data/Intrinsic/2016.02.01_000/Second_round/Sound_Stimulation_video_'
@@ -245,11 +249,15 @@ class testAnalysis():
             self.directory = options.directory
 
         if options.upfile is not None:
-            videoupf = videobasepath + options.upfile + '.ma'
-            audioupf = audiobasepath + options.upfile + '/DaqDevice.ma'
+            upf = basepath + options.upfile + '/Camera/frames.ma'
         if options.downfile is not None:
-            videodwnf = videobasepath + options.downfile + '.ma'
-            audiodwnf = audiobasepath + options.downfile + '/DaqDevice.ma'
+            dwnf = basepath + options.downfile + '/Camera/frames.ma'
+        # if options.upfile is not None:
+        #     videoupf = videobasepath + options.upfile + '.ma'
+        #     audioupf = audiobasepath + options.upfile + '/DaqDevice.ma'
+        # if options.downfile is not None:
+        #     videodwnf = videobasepath + options.downfile + '.ma'
+        #     audiodwnf = audiobasepath + options.downfile + '/DaqDevice.ma'
 
         
         im=[]
@@ -263,39 +271,42 @@ class testAnalysis():
         print "data loaded"
         
          
-        rawtimes=[]
-        rawimageData=[]
-        rawtimes = im.axisValues('Time').astype('float32')
+        # rawtimes=[]
+        # rawimageData=[]
+        # rawtimes = im.axisValues('Time').astype('float32')
 
-        rawimageData = im.view(np.ndarray).astype('float32')
+        # rawimageData = im.view(np.ndarray).astype('float32')
 #   
+        self.times = im.axisValues('Time').astype('float32')
+        self.imageData = im.view(np.ndarray).astype('float32')
+        
         #reads the timestamps from the files
-        indexFile = configfile.readConfigFile(basepath+'.index') 
-        timestampup = indexFile.__getitem__('video_'+DB[options.fdict][0]+'.ma')[u'__timestamp__']
-        audioupindex = configfile.readConfigFile(audiobasepath+DB[options.fdict][0]+'/.index')
-        audioupstamp = audioupindex.__getitem__(u'.')[u'__timestamp__'] 
+        # indexFile = configfile.readConfigFile(basepath+'.index') 
+        # timestampup = indexFile.__getitem__('video_'+DB[options.fdict][0]+'.ma')[u'__timestamp__']
+        # audioupindex = configfile.readConfigFile(audiobasepath+DB[options.fdict][0]+'/.index')
+        # audioupstamp = audioupindex.__getitem__(u'.')[u'__timestamp__'] 
  
        
-        diffup = audioupstamp - timestampup
+        # diffup = audioupstamp - timestampup
 
         
         
-        audio = MetaArray(file = audioupf, subset=(slice(0,2), slice(64,128), slice(64,128)))
-        audiotime = audio.axisValues('Time').astype('float32')
-        audiomin = np.min(audiotime) + diffup
-        audiomax = np.max(audiotime) + diffup
+        # audio = MetaArray(file = audioupf, subset=(slice(0,2), slice(64,128), slice(64,128)))
+        # audiotime = audio.axisValues('Time').astype('float32')
+        # audiomin = np.min(audiotime) + diffup
+        # audiomax = np.max(audiotime) + diffup
         
-        print 'audiomin', audiomin
-        print 'audiomax', audiomax
+        # print 'audiomin', audiomin
+        # print 'audiomax', audiomax
 
-        adjustedtime = rawtimes[np.logical_and(rawtimes <= audiomax+5, rawtimes >= audiomin)]
-        frame_start=np.amin(np.where(rawtimes >= audiomin))
-        frame_end=np.amax(np.where(rawtimes <= audiomax+4))
-        adjustedimagedata = rawimageData[frame_start:frame_end]
+        # adjustedtime = rawtimes[np.logical_and(rawtimes <= audiomax+5, rawtimes >= audiomin)]
+        # frame_start=np.amin(np.where(rawtimes >= audiomin))
+        # frame_end=np.amax(np.where(rawtimes <= audiomax+4))
+        # adjustedimagedata = rawimageData[frame_start:frame_end]
         #adjustedimagedata = rawimageData[np.logical_and(rawtimes <= audiomax+.5, rawtimes >= audiomin)]
  
-        self.times = [x-np.min(adjustedtime) for x in adjustedtime]
-        self.imageData = adjustedimagedata
+        # self.times = [x-np.min(adjustedtime) for x in adjustedtime]
+        # self.imageData = adjustedimagedata
         # self.imageData=np.mean(self.imageData, axis=0)
         
 
@@ -557,7 +568,7 @@ class testAnalysis():
             #scipy.ndimage.gaussian_filter(self.phaseImage2, 2, order=0, output=self.phaseImage2, mode='reflect')
             np1 = scipy.ndimage.gaussian_filter(self.phaseImage1, gfilt, order=0, mode='reflect')
             np2 = scipy.ndimage.gaussian_filter(self.phaseImage2, gfilt, order=0, mode='reflect')
-            dphase = np1 + np2
+            dphase = (np1 + np2)/2
             #dphase = self.phaseImage1 - self.phaseImage2
            
             #scipy.ndimage.gaussian_filter(dphase, 2, order=0, output=dphase, mode='reflect')
@@ -684,16 +695,16 @@ class testAnalysis():
             #scipy.ndimage.gaussian_filter(self.phaseImage2, 2, order=0, output=self.phaseImage2, mode='reflect')
             np1 = scipy.ndimage.gaussian_filter(self.phaseImage1, gfilt, order=0, mode='reflect')
             np2 = scipy.ndimage.gaussian_filter(self.phaseImage2, gfilt, order=0, mode='reflect')
-            dphase = np1 + np2
+            dphase = (np1 + np2)/2
             print 'shape of dphase', dphase.shape
             #dphase = self.phaseImage1 - self.phaseImage2
             print 'min phase', np.amin(dphase)
             print 'max phase', np.amax(dphase)
-            for i in range(dphase.shape[0]):
-                for j in range(dphase.shape[1]):
-                    #for k in range(dphase.shape[2]):
-                    if dphase[i,j]<0:
-                        dphase[i,j] = dphase[i,j]+2*np.pi
+            # for i in range(dphase.shape[0]):
+            #     for j in range(dphase.shape[1]):
+            #         #for k in range(dphase.shape[2]):
+            #         if dphase[i,j]<0:
+            #             dphase[i,j] = dphase[i,j]+2*np.pi
 
             print 'min phase', np.amin(dphase)
             print 'max phase', np.amax(dphase)
@@ -704,7 +715,7 @@ class testAnalysis():
             item = pg.ImageItem(dphase)
             view.addItem(item)
             item.setLookupTable(lut)
-            item.setLevels([0,2*np.pi])
+            item.setLevels([-np.pi,np.pi])
 
             # self.colorlevels = pg.GradientEditorItem()
             # self.colorlevels.getLookupTable(17)
@@ -718,7 +729,7 @@ class testAnalysis():
             gradlegend.setGradient(maps.getGradient())
             view.addItem(gradlegend)
             #self.phiView.addItem(pg.ImageItem(dphase))
-            self.phi = pg.image(dphase, title="2x Phi map", levels=(0, 2*np.pi))
+            self.phi = pg.image(dphase, title="2x Phi map", levels=(-np.pi, np.pi))
             
             #imgpdouble = pylab.imshow(dphase, cmap=matplotlib.cm.hsv)
             #pylab.title('2x Phi map')
