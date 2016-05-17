@@ -80,7 +80,9 @@ fl = [3000*x for x in freqlist]
 print 'fl:', fl
 
 # Keys are first file #. Data are file name, number of reps, wavelength, attn, date, frequency, comment
-DB = {9: ('009', 4, 610, 15.0, '16May16', 16.0, 'thinned skull')}
+DB = {9: ('009', 4, 610, 15.0, '16May16', 8.0, 'thinned skull')}
+DB[7] = ('007', 4, 610, 15.0, '16May16', 16.0, 'thinned skull')
+DB[5] = ('005', 4, 610, 15.0, '16May16', 32.0, 'thinned skull')
 #DB[1] = ('001','002', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
 #DB[9] = ('009','004', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
            
@@ -108,27 +110,28 @@ class testAnalysis():
     def parse_and_go(self, argsin = None):
         global period
         global binsize
+        global options
         parser=OptionParser() # command line options
         ##### parses all of the options inputted at the command line TFR 11/13/2015
-        # parser.add_option("-u", "--upfile", dest="upfile", metavar='FILE',
-        #                   help="load the up-file")
-        # parser.add_option("-d", "--downfile", dest="downfile", metavar='FILE',
-        #                   help="load the down-file")
-        # parser.add_option("-D", "--directory", dest="directory", metavar='FILE',
-        #                   help="Use directory for data")
-        # parser.add_option("-t", "--test", dest="test", action='store_true',
-        #                   help="Test mode to check calculations", default=False)
-        # parser.add_option("-p", '--period', dest = "period", default=4.25, type="float",
-        #                   help = "Stimulus cycle period")
-        # parser.add_option("-c", '--cycles', dest = "cycles", default=0, type="int",
-        #                   help = "# cycles to analyze")
-        # parser.add_option("-b", '--binning', dest = "binsize", default=0, type="int",
-        #                   help = "bin reduction x,y")
-        # parser.add_option("-g", '--gfilter', dest = "gfilt", default=0, type="float",
-        #                   help = "gaussian filter width")
+        parser.add_option("-u", "--upfile", dest="upfile", metavar='FILE',
+                          help="load the up-file")
+        parser.add_option("-d", "--downfile", dest="downfile", metavar='FILE',
+                          help="load the down-file")
+        parser.add_option("-D", "--directory", dest="directory", metavar='FILE',
+                          help="Use directory for data")
+        parser.add_option("-t", "--test", dest="test", action='store_true',
+                          help="Test mode to check calculations", default=False)
+        parser.add_option("-p", '--period', dest = "period", default=4.25, type="float",
+                          help = "Stimulus cycle period")
+        parser.add_option("-c", '--cycles', dest = "cycles", default=0, type="int",
+                          help = "# cycles to analyze")
+        parser.add_option("-b", '--binning', dest = "binsize", default=0, type="int",
+                          help = "bin reduction x,y")
+        parser.add_option("-g", '--gfilter', dest = "gfilt", default=0, type="float",
+                          help = "gaussian filter width")
         parser.add_option("-f", '--fdict', dest = "fdict", default=0, type="int",
                           help = "Use dictionary entry")
-        
+        done_deal=np.zeros((512,512),float)
         if argsin is not None:
             (options, args) = parser.parse_args(argsin)
         else:
@@ -146,89 +149,21 @@ class testAnalysis():
             self.directory = options.directory
         print 'options.upfile', options.upfile
         if options.reps is not None:
-            for nn in range(options.rep):
-                self.loadfile(nn)
-            #load file
-            #subtract background
-            #analyze
-            #combine
-            
-        
-        
-
-        # if options.upfile is not None:
-        #     videoupf = videobasepath + options.upfile + '.ma'
-        #     audioupf = audiobasepath + options.upfile + '/DaqDevice.ma'
-        # if options.downfile is not None:
-        #     videodwnf = videobasepath + options.downfile + '.ma'
-        #     audiodwnf = audiobasepath + options.downfile + '/DaqDevice.ma'
-
-        
-        
-        #reads the timestamps from the files
-        # indexFile = configfile.readConfigFile(basepath+'.index') 
-        # timestampup = indexFile.__getitem__('video_'+DB[options.fdict][0]+'.ma')[u'__timestamp__']
-        # audioupindex = configfile.readConfigFile(audiobasepath+DB[options.fdict][0]+'/.index')
-        # audioupstamp = audioupindex.__getitem__(u'.')[u'__timestamp__'] 
- 
-       
-        # diffup = audioupstamp - timestampup
-
-        
-        
-        # audio = MetaArray(file = audioupf, subset=(slice(0,2), slice(64,128), slice(64,128)))
-        # audiotime = audio.axisValues('Time').astype('float32')
-        # audiomin = np.min(audiotime) + diffup
-        # audiomax = np.max(audiotime) + diffup
-        
-        # print 'audiomin', audiomin
-        # print 'audiomax', audiomax
-
-        # adjustedtime = rawtimes[np.logical_and(rawtimes <= audiomax+5, rawtimes >= audiomin)]
-        # frame_start=np.amin(np.where(rawtimes >= audiomin))
-        # frame_end=np.amax(np.where(rawtimes <= audiomax+4))
-        # adjustedimagedata = rawimageData[frame_start:frame_end]
-        #adjustedimagedata = rawimageData[np.logical_and(rawtimes <= audiomax+.5, rawtimes >= audiomin)]
- 
-        # self.times = [x-np.min(adjustedtime) for x in adjustedtime]
-        # self.imageData = adjustedimagedata
-        # self.imageData=np.mean(self.imageData, axis=0)
-        
-
-        #background image
-        background = self.imageData[self.times<1]
-        pg.image(np.mean(background,axis=0), title='average background ')
-
-        background = np.mean(background,axis=0)
-        # print 'dimensions of background', np.shape(background)
-        #pg.image(background, title='mean background')
-        # #subtract background from image files
-
-        # print 'dimensions of imagedata', np.shape(self.imageData)
-        #subtracted = np.zeros(np.shape(self.imageData), float)
-        divided = np.zeros(np.shape(self.imageData), float)
-        for i in range(self.imageData.shape[0]):
-           #subtracted[i,:,:] = (self.imageData[i,:,:]-background)
-            divided[i,:,:] = (self.imageData[i,:,:]-background)/background
-            #subtracted = self.imageData-background
-        #subtracted=subtracted/subtracted.mean()
-        #divided=divided/divided.mean()
-        # print 'dimensions of subtracted', np.shape(subtracted)
-        # print 'dimensions of divided', np.shape(divided)
-        #subtracted = np.mean(subtracted, axis=0)
-        divided = np.mean(divided,axis=0)
-        #pg.image(subtracted, title='subtracted')
-        pg.image(divided,title='divided')
-
-        self.imageData = np.mean(self.imageData, axis=0)
-        print 'dimensions of imagedata', np.shape(self.imageData)
-        pg.image(self.imageData,title='mean raw image')
-       
+            for nn in range(options.reps):
+                self.load_file(nn)
+                self.Image_Background()
+                self.Image_Divided()
+                print 'divided', np.shape(self.divided)
+                done_deal = done_deal+self.divided
+            self.AvgFrames=done_deal/4
+            pg.image(self.AvgFrames,title='Average Frames')
+                 
         return
 
     def load_file(self,repnum):
-        
-        upf = basepath + options.upfile + '/00' + repnum + '/Camera/frames.ma'
+        global options
+
+        upf = basepath + options.upfile + '/00' + str(repnum) + '/Camera/frames.ma'
         im=[]
         self.imageData = []
         print "loading data from ", upf
@@ -244,56 +179,24 @@ class testAnalysis():
    
         return
 
-        # #loading background data
-        # print 'running subtractBackground'
-        # bckfile = videobasepath + '005.ma'
-        # bckaudio = audiobasepath + '005/DaqDevice.ma'
-        # # bckfile = videobasepath + '011.ma'
-        # # bckaudio = audiobasepath + '011/DaqDevice.ma'
-        
-        # try:
-        #     im = MetaArray(file = bckfile,  subset=(slice(0,2), slice(64,128), slice(64,128)))
-        # except:
-        #     print 'no background file!'
-        # #correct for timing differences
-        # audio = []
-        # audio = MetaArray(file = bckaudio, subset=(slice(0,2), slice(64,128), slice(64,128)))
-        # audiotime = audio.axisValues('Time').astype('float32')
+    def Image_Background(self):
+        self.background=[]
+        background = self.imageData[self.times<1]
+        pg.image(np.mean(background,axis=0), title='average background ')
 
-        # audiomin = np.min(audiotime) + diffup
-       
-        # audiomax = np.max(audiotime) + diffup
-        # rawtimes = im.axisValues('Time').astype('float32')
-        # adjustedtime = rawtimes[np.logical_and(rawtimes <= audiomax+.5, rawtimes >= audiomin)]
-        # bckimagedata = im[np.logical_and(rawtimes <= audiomax, rawtimes >= audiomin)]
-        # raw=self.imageData
-        # #check that the background image and the data are the same shape and average
-        # #then subtract the average from the stimulated data
-        # getout = fac_lift(bckimagedata,adjustedtime)
-        # bckimagedata=getout
-        # getout2 = fac_lift(raw, adjustedtime)
-        # self.imageData=getout2
-        # print 'shape of background', bckimagedata.shape
-        # print 'shape of imageData', self.imageData.shape
-        # bckimagedata=np.mean(bckimagedata,axis=0)
-        # # if bckimagedata.shape[0] <= self.imageData.shape[0]:
-        # #     print 'image is longer'
-        # #     stop = bckimagedata.shape[0]
-        # #     print 'stop'
-        # #     self.imageData=self.imageData[: stop,:,:,:]
-        # #     print 'stop2'
-        # #     subtractor = np.zeros(bckimagedata.shape, float)
-        # #     diffimage = np.zeros(bckimagedata.shape, float)
-        # #     subtractor = np.mean(np.array([self.imageData,bckimagedata]), axis=0)
-        # #     #diffimage=sub_func(self.imageData, subtractor)
-        # #     diffimage = self.imageData - subtractor
-        # #     print 'stop 3'     
-        # # else:
-        # #     print 'error! image is shorter, fix this code!'
-        # diffimage = scipy.signal.detrend(diffimage, axis=0)    
-        # self.imageData = diffimage    
-        # return
+        self.background = np.mean(background,axis=0)
+        return
 
+    def Image_Divided(self):
+
+        divided = np.zeros(np.shape(self.imageData), float)
+        for i in range(self.imageData.shape[0]):
+            if self.times[i]>1:
+                divided[i,:,:] = (self.imageData[i,:,:]-self.background)/self.background
+        self.divided = np.mean(divided[self.times>=1],axis=0)
+        #pg.image(subtracted, title='subtracted')
+        pg.image(self.divided,title='divided')    
+        return
     
     def Analysis_FourierMap_TFR(self, period = 4.25, target = 1, mode=0, bins = 1, up=1):
         global D
