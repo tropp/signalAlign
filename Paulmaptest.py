@@ -57,21 +57,21 @@ from pyqtgraph.metaarray import MetaArray
 from optparse import OptionParser
 
 # frequency list for runs 15 May, 24 May and 2 June 2010, until #60 in 2-June
-freqlist = np.logspace(0, 4, num=17, base=2.0)
-fl1 = [3000*x for x in freqlist]
-#fl1=[1, 1.414, 2.0, 2.828, 4.0, 5.656, 8.0, 11.318, 16.0, 22.627, 32.0, 45.254]
-# frequency list for runs 2-June 2010, starting at #60 (heavier coverage of higher frequencies) and text note
-fl = [4.0, 4.756, 5.656, 6.727, 8.0, 9.5, 11.3, 13.45, 16.0, 19.02, 22.62, 26.91, 31.99, 38.09, 45.25, 53.8]
+# freqlist = np.logspace(0, 4, num=17, base=2.0)
+# fl1 = [3000*x for x in freqlist]
+# #fl1=[1, 1.414, 2.0, 2.828, 4.0, 5.656, 8.0, 11.318, 16.0, 22.627, 32.0, 45.254]
+# # frequency list for runs 2-June 2010, starting at #60 (heavier coverage of higher frequencies) and text note
+# fl = [4.0, 4.756, 5.656, 6.727, 8.0, 9.5, 11.3, 13.45, 16.0, 19.02, 22.62, 26.91, 31.99, 38.09, 45.25, 53.8]
 
-freqlist = np.logspace(0, 4, num=5, base=2.0)
+freqlist = np.logspace(0, 4, num=9, base=2.0)
 fl2 = [3000*x for x in freqlist]
 print 'freq list', fl2
 # dictionary of data sets
 # Keys are first file #. Data are file name (up, down), wavelength, attn, period, date, frequency list, comment
 # 15 May 10:  used amber LED (noisy) for 610 illumination
-DB = {5: ('005', '000', 610, 30.0, 1.25, '19Feb16', fl2, 'no skull')}
-DB[4] = ('004', '001', 610, 20.0, 1.25, fl2, 'no skull')
-DB[3] = ('003', '002', 610, 20.0, 1.25, fl2, 'no skull')
+DB = {2: ('002', '001', 610, 15.0, 2.25, '29Apr16', fl2, 'no skull')}
+DB[4] = ('004', '003', 610, 30.0, 2.25, '29Apr16', fl2, 'no skull')
+#DB[3] = ('003', '002', 610, 20.0, 1.25, fl2, 'no skull')
 # DB = {11: ('011', '004', 610, 20.0, 4.5, '09Feb16', fl1, 'thinned skull')}
 # DB[14] = ('014', '021', 610, 15.0, 4.25, '09Feb16', fl1, 'thinned skull') #Tessa's data
 # #DB[18] = ('018', '019', 610, 15.0, 6.444, '15May10', fl1, 'dura, deeper focus')
@@ -119,7 +119,7 @@ DB[3] = ('003', '002', 610, 20.0, 1.25, fl2, 'no skull')
 
 D = []
 d = []
-measuredPeriod = 1.25
+measuredPeriod = 2.25
 binsize = 4
 gfilt = 0
 #freqlist = numpy.logspace(3, 4.7, 12, base=10)
@@ -127,7 +127,7 @@ homedir = os.getenv('HOME')
 workingpath = 'Desktop/IntrinsicImaging/video_'
 basepath = os.path.join(homedir, workingpath)
 #basepath = '/Volumes/Promise Pegasus/ManisLab_Data3/IntrinsicImaging/'
-basepath = '/Volumes/TRoppData/data/Intrinsic_data/2016.02.19_000/slice_000/Sound_Stimulation_'
+basepath = '/Volumes/Time_Machine_Backups/2016.05.12_000/Sound_Stimulation_Apr_2016_'
 
 class testAnalysis():
     def __init__(self):
@@ -146,7 +146,7 @@ class testAnalysis():
         self.nCycles = 10
         
     def parse_and_go(self, argsin = None):
-        global period
+        global measuredPeriod
         parser=OptionParser() # command line options
         ##### parses all of the options inputted at the command line TFR 11/13/2015
         parser.add_option("-u", "--upfile", dest="upfile", metavar='FILE',
@@ -271,14 +271,15 @@ class testAnalysis():
                upflag = 1
             else:
                upflag = 0
-            measuredPeriod=1.25
+            measuredPeriod=2.25
             self.Analysis_FourierMap(period=measuredPeriod, target = target,  bins=binsize, up=upflag)
         if target > 0:
             self.plotmaps_pg(mode = 1, target = target, gfilter = gfilt)
             self.firstframe = pg.image(self.imageData[0], title='first frame of image')
 
-    def Analysis_FourierMap(self, period = 1.25, target = 1, mode=0, bins = 1, up=1):
+    def Analysis_FourierMap(self, period = 2.25, target = 1, mode=0, bins = 1, up=1):
         global D
+        global measuredPeriod
         D = []
         self.DF = []
         self.avgimg = []
@@ -685,7 +686,7 @@ class testAnalysis():
             #scipy.ndimage.gaussian_filter(dphase, 2, order=0, output=dphase, mode='reflect')
             #self.phiView.addItem(pg.ImageItem(dphase))
             self.phi = pg.image(dphase, title="2x Phi map", levels=(-np.pi, np.pi))
-            self.dphaseReshape(data=dphase)
+            #self.dphaseReshape(data=dphase)
             #imgpdouble = pylab.imshow(dphase, cmap=matplotlib.cm.hsv)
             #pylab.title('2x Phi map')
             #pylab.colorbar()

@@ -468,15 +468,15 @@ class testAnalysis():
             self.amplitudeImage1 = ampimg
             self.phaseImage1 = phaseimg
             f = open('DF1.mat', 'w')
+            
+            scipy.io.savemat('/Users/tessajonneropp/Desktop/data/signalAlign/DF1.mat', mdict={'DF1': self.DF})
+            #scipy.io.savemat('/Users/tjropp/Desktop/data/signalAlign/DF1.mat', mdict={'DF1': self.DF})
             f.close()
-            #scipy.io.savemat('/Users/tessajonneropp/Desktop/data/signalAlign/DF1.mat', mdict={'DF1': self.DF})
-            scipy.io.savemat('/Users/tjropp/Desktop/data/signalAlign/DF1.mat', mdict={'DF1': self.DF})
-   
             f = open('times1.mat', 'w')
+            
+            scipy.io.savemat('/Users/tessajonneropp/Desktop/data/signalAlign/times1.mat', mdict={'times1': self.n_times})
+            #scipy.io.savemat('/Users/tjropp/Desktop/data/signalAlign/times1.mat', mdict={'times1': self.n_times})
             f.close()
-            #scipy.io.savemat('/Users/tessajonneropp/Desktop/data/signalAlign/times1.mat', mdict={'times1': self.n_times})
-            scipy.io.savemat('/Users/tjropp/Desktop/data/signalAlign/DF1.mat', mdict={'DF1': self.DF})
-   
         if target == 2:
             f = open('img_phase2.dat', 'w')
             pickle.dump(phaseimg, f)
@@ -488,11 +488,11 @@ class testAnalysis():
             self.phaseImage2 = phaseimg
             f = open('DF2.mat', 'w')
             f.close()
-            scipy.io.savemat('/Users/tjropp/Desktop/data/signalAlign/DF2.mat', mdict={'DF2': self.DF})
+            scipy.io.savemat('/Users/tessajonneropp/Desktop/data/signalAlign/DF2.mat', mdict={'DF2': self.DF})
 
             f = open('times2.mat','w')
             f.close()
-            scipy.io.savemat('/Users/tjropp/Desktop/data/signalAlign/times2.mat', mdict={'times2': self.n_times})
+            scipy.io.savemat('/Users/tessajonneropp/Desktop/data/signalAlign/times2.mat', mdict={'times2': self.n_times})
             
         print "fft calculated, data  saveddata"
         # save most recent calculation to disk
@@ -708,12 +708,12 @@ class testAnalysis():
             #pylab.subplot(2,3,3)
             sh = D.shape
             spr = sh[2]/self.nPhases
-            wvfms=[]
-            for i in range(0, self.nPhases):
-                Dm = self.avgimg[i*spr,i*spr] # diagonal run
+            #wvfms=[]
+            #for i in range(0, self.nPhases):
+               # Dm = self.avgimg[i*spr,i*spr] # diagonal run
                 #wvfms=self.n_times, 100.0*(D[:,self.phasex[i], self.phasey[i]]/Dm)
                 #pylab.plot(self.n_times, 100.0*(D[:,self.phasex[i], self.phasey[i]]/Dm))
-                self.wavePlt.plot(self.n_times, 100.0*(D[:,self.phasex[i], self.phasey[i]]/Dm))
+                #self.wavePlt.plot(self.n_times, 100.0*(D[:,self.phasex[i], self.phasey[i]]/Dm))
                 #self.wavePlt.plot(100.0*(D[:,self.phasex[i], self.phasey[i]]/Dm)) #plotting on Waveforms.
                 #self.freqPlt.plot(self.n_freqs, 100.0*(D[:,self.phasex[i], self.phasey[i]]/Dm))
                 #pylab.hold('on')
