@@ -73,22 +73,23 @@ D = []
 d = []
 measuredPeriod = 6.444
 binsize = 4
-gfilt = 0
+gfilt = 1
 
 freqlist = np.logspace(0, 4, num=17, base=2.0)
 fl = [3000*x for x in freqlist]
 print 'fl:', fl
 
 # Keys are first file #. Data are file name, number of reps, wavelength, attn, date, frequency, comment
-DB = {18: ('018', '019',4, 610, 15.0, '16May16', 8.0, 'thinned skull')}
-DB[17] = ('017', '016',4, 610, 15.0, '16May16', 16.0, 'thinned skull')
+DB = {2: ('002', '000',4, 610, 15.0, '16May16', 8.0, 'thinned skull')}
+DB[7] = ('007', '006',4, 610, 15.0, '16May16', 16.0, 'thinned skull')
+DB[4] = ('004', '005',4, 610, 15.0, '16May16', 16.0, 'thinned skull')
 # DB[5] = ('005', 4, 610, 15.0, '16May16', 32.0, 'thinned skull')
 
 #DB[1] = ('001','002', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
 #DB[9] = ('009','004', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
            
 #basepath = '/Volumes/TRoppData/data/Intrinsic_data/2016.02.19_000/slice_000/SingleTone_Stimulation_'
-basepath = '/Volumes/TRoppData/data/2016.05.16_000/Intrinsic_Stimulation_Camera_'
+basepath = '/Volumes/TRoppData/data/2016.05.18_000/Intrinsic_Stimulation_Camera_'
 
 class testAnalysis():
     def __init__(self):
@@ -132,8 +133,10 @@ class testAnalysis():
                           help = "gaussian filter width")
         parser.add_option("-f", '--fdict', dest = "fdict", default=0, type="int",
                           help = "Use dictionary entry")
-        updone_deal=np.zeros((128,128),float)
-        dwndone_deal=np.zeros((128,128),float)
+        # updone_deal=np.zeros((230,232),float)
+        # dwndone_deal=np.zeros((230,232),float)
+        updone_deal=np.zeros((269,268),float)
+        dwndone_deal=np.zeros((269,268),float)
         if argsin is not None:
             (options, args) = parser.parse_args(argsin)
         else:
@@ -168,6 +171,9 @@ class testAnalysis():
             self.dwnAvgFrames=dwndone_deal/4
             pg.image(self.upAvgFrames,title='up Average Frames')
             pg.image(self.dwnAvgFrames,title='down Average Frames')
+            self.upAvgFrames=scipy.ndimage.gaussian_filter(self.upAvgFrames, sigma=[4,3,3], order=0,mode='reflect',truncate=4.0)
+
+            self.dwnAvgFrames=scipy.ndimage.gaussian_filter(self.dwnAvgFrames, sigma=[4,3,3], order=0,mode='reflect',truncate=4.0)
         self.Analysis_FourierMap_TFR(self.upAvgFrames, period = 4.25, target = 1, mode=0, bins = 1, up=1)  
         self.Analysis_FourierMap_TFR(self.dwnAvgFrames, period = 4.25, target = 2, mode=0, bins = 1, up=0)   
         self.plotmaps_pg(mode = 1, target = 2, gfilter = gfilt)  
@@ -194,8 +200,9 @@ class testAnalysis():
 
     def Image_Background(self):
         self.background=[]
-        background = self.imageData[self.times<1]
-        pg.image(np.mean(background,axis=0), title='average background ')
+        background = self.imageData[:50]
+        print 'shape of background:', np.shape(background)
+        pg.image(np.mean(background[10:49],axis=0), title='average background ')
 
         self.background = np.mean(background,axis=0)
         return
@@ -204,9 +211,10 @@ class testAnalysis():
 
         divided = np.zeros(np.shape(self.imageData), float)
         for i in range(self.imageData.shape[0]):
-            if self.times[i]>1:
-                divided[i,:,:] = self.imageData[i,:,:]
-        self.divided = divided[self.times>=1]
+            if self.times[i]>=1:
+                divided[i,:,:] = (self.imageData[i,:,:])
+        #        divided[i,:,:] = (self.imageData[i,:,:]-self.background)/self.background
+        self.divided = divided[50:]
         #pg.image(subtracted, title='subtracted')
         #pg.image(self.divided,title='divided')    
         return
@@ -258,8 +266,10 @@ class testAnalysis():
             f = open('img_amplitude1.dat', 'w')
             pickle.dump(ampimg, f)
             f.close()
+
             self.amplitudeImage1 = ampimg
             self.phaseImage1 = phaseimg
+            
         if target == 2:
             f = open('img_phase2.dat', 'w')
             pickle.dump(phaseimg, f)
@@ -269,6 +279,7 @@ class testAnalysis():
             f.close()
             self.amplitudeImage2 = ampimg
             self.phaseImage2 = phaseimg
+
         print "fft calculated, data  saveddata"
         # save most recent calculation to disk
 
@@ -297,22 +308,22 @@ class testAnalysis():
         max1 = numpy.amax(self.amplitudeImage1)
         if target > 1:
             max1 = numpy.amax([max1, numpy.amax(self.amplitudeImage2)])
-        max1 = 10.0*int(max1/10.0)
+        #max1 = 10.0*int(max1/10.0)
         # pylab.figure(1)
         # pylab.subplot(2,3,1)
         # pylab.title('Amplitude Map1')
         # #scipy.ndimage.gaussian_filter(self.amplitudeImage1, 2, order=0, output=self.amplitudeImage1, mode='reflect')
-        ampimg = scipy.ndimage.gaussian_filter(self.amplitudeImage1,gfilt, order=0, mode='reflect')
+        #ampimg = scipy.ndimage.gaussian_filter(self.amplitudeImage1,gfilt, order=0, mode='reflect')
         #self.amp1View.addItem(pg.ImageItem(ampimg))
-        self.amp1 = pg.image(ampimg, title="Amplitude Map 1", levels=(0.0, max1))
+        self.amp1 = pg.image(self.amplitudeImage1, title="Amplitude Map 1", levels=(0.0, max1))
         #imga1 = pylab.imshow(ampimg)
         #pylab.colorbar()
         #imga1.set_clim = (0.0, max1)
         #pylab.subplot(2,3,4)
         #pylab.title('Phase Map1')
-        phsmap=scipy.ndimage.gaussian_filter(self.phaseImage1, gfilt, order=0,mode='reflect')
+        #phsmap=scipy.ndimage.gaussian_filter(self.phaseImage1, gfilt, order=0,mode='reflect')
         #self.phase1View.addItem(pg.ImageItem(phsmap))
-        self.phs1 = pg.image(phsmap, title='Phase Map 1')
+        self.phs1 = pg.image(self.phaseImage1, title='Phase Map 1',levels=(-np.pi, np.pi))
         #self.phs1.getHistogramWidget().item.gradient.
         #imgp1 = pylab.imshow(phsmap, cmap=matplotlib.cm.hsv)
         #pylab.colorbar()
@@ -347,16 +358,16 @@ class testAnalysis():
             #pylab.subplot(2,3,2)
             #pylab.title('Amplitude Map2')
             #scipy.ndimage.gaussian_filter(self.amplitudeImage2, 2, order=0, output=self.amplitudeImage2, mode='reflect')
-            ampImg2 = scipy.ndimage.gaussian_filter(self.amplitudeImage2,gfilt, order=0, mode='reflect')
+            #ampImg2 = scipy.ndimage.gaussian_filter(self.amplitudeImage2,sigma=3)
             #imga2 = pylab.imshow(ampImg2)
             #self.amp2View.addItem(pg.ImageItem(ampImg2))
-            self.amp2 = pg.image(ampImg2, title='Amplitude Map 2', levels=(0.0, max1))
+            self.amp2 = pg.image(self.amplitudeImage2, title='Amplitude Map 2', levels=(0.0, max1))
             #imga2.set_clim = (0.0, max1)
             #pylab.colorbar()
             #pylab.subplot(2,3,5)
-            phaseImg2 = scipy.ndimage.gaussian_filter(self.phaseImage2, gfilt, order=0,mode='reflect') 
+            #phaseImg2 = scipy.ndimage.gaussian_filter(self.phaseImage2, sigma=3) 
             #self.phase2View.addItem(pg.ImageItem(phaseImg2))
-            self.phs2 = pg.image(phaseImg2, title="Phase Map 2", levels=(-np.pi/2.0, np.pi/2.0))
+            self.phs2 = pg.image(self.phaseImage2, title="Phase Map 2", levels=(-np.pi, np.pi))
             #imgp2 = pylab.imshow(phaseImg2, cmap=matplotlib.cm.hsv)
             #pylab.colorbar()
             #imgp2.set_clim=(-numpy.pi/2.0, numpy.pi/2.0)
@@ -364,9 +375,10 @@ class testAnalysis():
             ### doubled phase map
             #pylab.subplot(2,3,6)
             #scipy.ndimage.gaussian_filter(self.phaseImage2, 2, order=0, output=self.phaseImage2, mode='reflect')
-            np1 = scipy.ndimage.gaussian_filter(self.phaseImage1, gfilt, order=0, mode='reflect')
-            np2 = scipy.ndimage.gaussian_filter(self.phaseImage2, gfilt, order=0, mode='reflect')
-            dphase = (np1 + np2)/2
+            # np1 = scipy.ndimage.gaussian_filter(self.phaseImage1, sigma=3)
+            # np2 = scipy.ndimage.gaussian_filter(self.phaseImage2, sigma=3)
+            #dphase = (np1 + np2)/2
+            dphase = (self.phaseImage1+self.phaseImage2)/2
             print 'shape of dphase', dphase.shape
             #dphase = self.phaseImage1 - self.phaseImage2
             print 'min phase', np.amin(dphase)
