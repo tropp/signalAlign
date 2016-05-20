@@ -83,13 +83,15 @@ print 'fl:', fl
 DB = {2: ('002', '000',4, 610, 15.0, '16May16', 8.0, 'thinned skull')}
 DB[7] = ('007', '006',4, 610, 15.0, '16May16', 16.0, 'thinned skull')
 DB[4] = ('004', '005',4, 610, 15.0, '16May16', 16.0, 'thinned skull')
+DB[1] = ('001', '000',4, 610, 15.0, '16May16', 16.0, 'thinned skull')
+
 # DB[5] = ('005', 4, 610, 15.0, '16May16', 32.0, 'thinned skull')
 
 #DB[1] = ('001','002', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
 #DB[9] = ('009','004', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
            
 #basepath = '/Volumes/TRoppData/data/Intrinsic_data/2016.02.19_000/slice_000/SingleTone_Stimulation_'
-basepath = '/Volumes/TRoppData/data/2016.05.18_000/Intrinsic_Stimulation_Camera_'
+basepath = '/Volumes/TRoppData/data/2016.05.19_000/Intrinsic_Stimulation_Camera_'
 
 class testAnalysis():
     def __init__(self):
@@ -135,8 +137,8 @@ class testAnalysis():
                           help = "Use dictionary entry")
         # updone_deal=np.zeros((230,232),float)
         # dwndone_deal=np.zeros((230,232),float)
-        updone_deal=np.zeros((269,268),float)
-        dwndone_deal=np.zeros((269,268),float)
+        updone_deal=np.zeros((256,256),float)
+        dwndone_deal=np.zeros((256,256),float)
         if argsin is not None:
             (options, args) = parser.parse_args(argsin)
         else:
@@ -171,9 +173,9 @@ class testAnalysis():
             self.dwnAvgFrames=dwndone_deal/4
             pg.image(self.upAvgFrames,title='up Average Frames')
             pg.image(self.dwnAvgFrames,title='down Average Frames')
-            self.upAvgFrames=scipy.ndimage.gaussian_filter(self.upAvgFrames, sigma=[4,3,3], order=0,mode='reflect',truncate=4.0)
+#            self.upAvgFrames=scipy.ndimage.gaussian_filter(self.upAvgFrames, sigma=1, order=0,mode='reflect',truncate=4.0)
 
-            self.dwnAvgFrames=scipy.ndimage.gaussian_filter(self.dwnAvgFrames, sigma=[4,3,3], order=0,mode='reflect',truncate=4.0)
+            self.dwnAvgFrames=scipy.ndimage.gaussian_filter(self.dwnAvgFrames, sigma=1, order=0,mode='reflect',truncate=4.0)
         self.Analysis_FourierMap_TFR(self.upAvgFrames, period = 4.25, target = 1, mode=0, bins = 1, up=1)  
         self.Analysis_FourierMap_TFR(self.dwnAvgFrames, period = 4.25, target = 2, mode=0, bins = 1, up=0)   
         self.plotmaps_pg(mode = 1, target = 2, gfilter = gfilt)  
@@ -212,8 +214,8 @@ class testAnalysis():
         divided = np.zeros(np.shape(self.imageData), float)
         for i in range(self.imageData.shape[0]):
             if self.times[i]>=1:
-                divided[i,:,:] = (self.imageData[i,:,:])
-        #        divided[i,:,:] = (self.imageData[i,:,:]-self.background)/self.background
+            #    divided[i,:,:] = (self.imageData[i,:,:])
+                divided[i,:,:] = (self.imageData[i,:,:]-self.background)/self.background
         self.divided = divided[50:]
         #pg.image(subtracted, title='subtracted')
         #pg.image(self.divided,title='divided')    
@@ -378,7 +380,7 @@ class testAnalysis():
             # np1 = scipy.ndimage.gaussian_filter(self.phaseImage1, sigma=3)
             # np2 = scipy.ndimage.gaussian_filter(self.phaseImage2, sigma=3)
             #dphase = (np1 + np2)/2
-            dphase = (self.phaseImage1+self.phaseImage2)/2
+            dphase = (self.phaseImage1-self.phaseImage2)
             print 'shape of dphase', dphase.shape
             #dphase = self.phaseImage1 - self.phaseImage2
             print 'min phase', np.amin(dphase)
