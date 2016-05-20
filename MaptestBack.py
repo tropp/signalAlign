@@ -165,7 +165,7 @@ class testAnalysis():
                 updone_deal = updone_deal+self.divided
 
                 self.load_file(options.downfile,nn)
-                self.Image_Background()
+                #self.Image_Background()
                 self.Image_Divided()
                 print 'divided', np.shape(self.divided)
                 dwndone_deal = dwndone_deal+self.divided
@@ -173,9 +173,15 @@ class testAnalysis():
             self.dwnAvgFrames=dwndone_deal/4
             pg.image(self.upAvgFrames,title='up Average Frames')
             pg.image(self.dwnAvgFrames,title='down Average Frames')
-#            self.upAvgFrames=scipy.ndimage.gaussian_filter(self.upAvgFrames, sigma=1, order=0,mode='reflect',truncate=4.0)
+            self.sobelup=scipy.ndimage.sobel(self.upAvgFrames,axis=0,mode='constant')
+            self.sobeldwn=scipy.ndimage.sobel(self.dwnAvgFrames,axis=0,mode='constant')
+            pg.image(self.sobelup,title='Sobel up')
+            pg.image(self.sobeldwn,title='Sobel down')
+            self.upAvgFrames=scipy.ndimage.gaussian_filter(self.upAvgFrames/self.sobelup, sigma=[3,1,1], order=0,mode='reflect',truncate=4.0)
 
-            self.dwnAvgFrames=scipy.ndimage.gaussian_filter(self.dwnAvgFrames, sigma=1, order=0,mode='reflect',truncate=4.0)
+            self.dwnAvgFrames=scipy.ndimage.gaussian_filter(self.dwnAvgFrames/self.sobeldwn, sigma=[3,1,1], order=0,mode='reflect',truncate=4.0)
+            
+            
         self.Analysis_FourierMap_TFR(self.upAvgFrames, period = 4.25, target = 1, mode=0, bins = 1, up=1)  
         self.Analysis_FourierMap_TFR(self.dwnAvgFrames, period = 4.25, target = 2, mode=0, bins = 1, up=0)   
         self.plotmaps_pg(mode = 1, target = 2, gfilter = gfilt)  
@@ -380,7 +386,7 @@ class testAnalysis():
             # np1 = scipy.ndimage.gaussian_filter(self.phaseImage1, sigma=3)
             # np2 = scipy.ndimage.gaussian_filter(self.phaseImage2, sigma=3)
             #dphase = (np1 + np2)/2
-            dphase = (self.phaseImage1-self.phaseImage2)
+            dphase = (self.phaseImage1+self.phaseImage2)/2
             print 'shape of dphase', dphase.shape
             #dphase = self.phaseImage1 - self.phaseImage2
             print 'min phase', np.amin(dphase)
