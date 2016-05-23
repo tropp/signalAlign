@@ -452,8 +452,8 @@ class testAnalysis():
         # calculate FFT and get amplitude and phase
         self.DF = numpy.fft.fft(D, axis = 0)
 
-        ampimg = numpy.abs(self.DF[3,:,:]).astype('float32') #changing this to 3 instead of 1 (same next line)
-        phaseimg = numpy.angle(self.DF[3,:,:]).astype('float32')
+        ampimg = numpy.abs(self.DF[1,:,:]).astype('float32') #changing this to 3 instead of 1 (same next line)
+        phaseimg = numpy.angle(self.DF[1,:,:]).astype('float32')
         if target == 1:
             f = open('img_phase1.dat', 'w')
             pickle.dump(phaseimg, f)
@@ -463,6 +463,7 @@ class testAnalysis():
             f.close()
             self.amplitudeImage1 = ampimg
             self.phaseImage1 = phaseimg
+            self.DF1=self.DF
             f = open('DF1.mat', 'w')
             f.close()
             scipy.io.savemat('/Users/tessajonneropp/Desktop/data/signalAlign/DF1.mat', mdict={'DF1': self.DF})
@@ -480,6 +481,7 @@ class testAnalysis():
             f.close()
             self.amplitudeImage2 = ampimg
             self.phaseImage2 = phaseimg
+            self.DF2=self.DF
             f = open('DF2.mat', 'w')
             f.close()
             scipy.io.savemat('/Users/tessajonneropp/Desktop/data/signalAlign/DF2.mat', mdict={'DF2': self.DF})
@@ -680,12 +682,13 @@ class testAnalysis():
             np1 = scipy.ndimage.gaussian_filter(self.phaseImage1, gfilt, order=0, mode='reflect')
             np2 = scipy.ndimage.gaussian_filter(self.phaseImage2, gfilt, order=0, mode='reflect')
             dphase = (np1 + np2)/2
-            
+            twophi = np.angle(self.DF1[1])*np.angle(self.DF2[1])/(np.pi)
             #dphase = self.phaseImage1 - self.phaseImage2
            
             #scipy.ndimage.gaussian_filter(dphase, 2, order=0, output=dphase, mode='reflect')
             #self.phiView.addItem(pg.ImageItem(dphase))
             self.phi = pg.image(dphase, title="2x Phi map", levels=(-np.pi, np.pi))
+            self.twophi = pg.image(twophi, title='2X Phi Map, using multiplication')
             #self.dphaseReshape(data=dphase)
             #imgpdouble = pylab.imshow(dphase, cmap=matplotlib.cm.hsv)
             #pylab.title('2x Phi map')
