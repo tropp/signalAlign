@@ -41,6 +41,7 @@ import matplotlib.mlab as mlab
 import pylab
 from PyQt4 import QtGui
 from skimage import feature
+from astropy.convolution import convolve_fft, convolve, Box2DKernel, Box1DKernel
 # try:
 #     import matplotlib
 #TFR 11/13/15 inserted the following line to try to resolve issue with pylab.show
@@ -71,7 +72,7 @@ app = pg.Qt.QtGui.QApplication([])
 #randomstuff= np.random.normal(size=(128,100,128))
 D = []
 d = []
-measuredPeriod = 6.444
+measuredPeriod = 4.5
 binsize = 4
 gfilt = 1
 
@@ -85,13 +86,14 @@ DB[7] = ('007', '006',4, 610, 15.0, '16May16', 16.0, 'thinned skull')
 DB[4] = ('004', '005',4, 610, 15.0, '16May16', 16.0, 'thinned skull')
 DB[1] = ('001', '000',4, 610, 15.0, '19May16', 16.0, 'thinned skull')
 DB[3] = ('003', '002',4, 610, 15.0, '19May16', 16.0, 'thinned skull')
+DB[18] = ('018', '019',4, 610, 15.0, '16May16', 16.0, 'thinned skull')
 # DB[5] = ('005', 4, 610, 15.0, '16May16', 32.0, 'thinned skull')
 
 #DB[1] = ('001','002', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
 #DB[9] = ('009','004', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
            
 #basepath = '/Volumes/TRoppData/data/Intrinsic_data/2016.02.19_000/slice_000/SingleTone_Stimulation_'
-basepath = '/Volumes/TRoppData/data/2016.05.19_000/Intrinsic_Stimulation_Camera_'
+basepath = '/Volumes/TRoppData/data/2016.05.16_000/Intrinsic_Stimulation_Camera_'
 
 class testAnalysis():
     def __init__(self):
@@ -137,8 +139,7 @@ class testAnalysis():
                           help = "Use dictionary entry")
         # updone_deal=np.zeros((230,232),float)
         # dwndone_deal=np.zeros((230,232),float)
-        updone_deal=np.zeros((256,256),float)
-        dwndone_deal=np.zeros((256,256),float)
+        
         if argsin is not None:
             (options, args) = parser.parse_args(argsin)
         else:
@@ -157,18 +158,20 @@ class testAnalysis():
             self.directory = options.directory
         print 'options.upfile', options.upfile
         if options.reps is not None:
+            updone_deal=np.zeros((options.reps, 275, 128,128),float)
+            dwndone_deal=np.zeros((options.reps,275, 128,128),float)
             for nn in range(options.reps):
                 self.load_file(options.upfile,nn)
                 self.Image_Background()
                 self.Image_Divided()
                 print 'divided', np.shape(self.divided)
-                updone_deal = updone_deal+self.divided
+                updone_deal[nn] = self.divided
 
                 self.load_file(options.downfile,nn)
                 #self.Image_Background()
                 self.Image_Divided()
                 print 'divided', np.shape(self.divided)
-                dwndone_deal = dwndone_deal+self.divided
+                dwndone_deal[nn] = self.divided
                 self.upAvgFrames=updone_deal
                 self.dwnAvgFrames=dwndone_deal
             #pg.image(self.upAvgFrames,title='up Average Frames')
@@ -181,9 +184,11 @@ class testAnalysis():
 
             #self.dwnAvgFrames=scipy.ndimage.gaussian_filter(self.dwnAvgFrames, sigma=[1,3,3], order=0,mode='reflect',truncate=4.0)
             
+        self.Analysis_FourierMap(self.upAvgFrames, period = 4.5, target = 1, mode=0, bins = 1, up=1)  
+        self.Analysis_FourierMap(self.dwnAvgFrames, period = 4.5, target = 2, mode=0, bins = 1, up=0)   
             
-        self.Analysis_FourierMap_TFR(self.upAvgFrames, period = 4.25, target = 1, mode=0, bins = 1, up=1)  
-        self.Analysis_FourierMap_TFR(self.dwnAvgFrames, period = 4.25, target = 2, mode=0, bins = 1, up=0)   
+        #self.Analysis_FourierMap_TFR(self.upAvgFrames, period = 4.25, target = 1, mode=0, bins = 1, up=1)  
+        #self.Analysis_FourierMap_TFR(self.dwnAvgFrames, period = 4.25, target = 2, mode=0, bins = 1, up=0)   
         self.plotmaps_pg(mode = 1, target = 2, gfilter = gfilt)  
         return
 
@@ -228,6 +233,193 @@ class testAnalysis():
         #pg.image(self.divided,title='divided')    
         return
     
+    def Analysis_FourierMap(self, fileframes, period = 4.5, target = 1, mode=0, bins = 1, up=1):
+        global D
+        global measuredPeriod
+        D = []
+        self.DF = []
+        self.avgimg = []
+        self.stdimg = []
+        self.nFrames =self.imageData.shape[0]
+        self.imagePeriod = 0
+       
+        self.imageData=fileframes
+        print "Analysis Starting"
+# first squeeze the image to 3d if it is 4d
+        maxt = self.times[-1] # find last image time
+        print "Duration of Image Stack: %9.3f s (%8.3f min)\n" % (maxt, maxt/60.0)
+        # sh = self.imageData.shape
+        # if len(sh) == 4:
+        #    self.imageData = self.imageData.squeeze()
+        #    sh = self.imageData.shape
+        dt = numpy.mean(numpy.diff(self.times)) # get the mean dt
+        print 'dt', dt
+        self.imagePeriod = period# image period in seconds.
+        print 'period:', self.imagePeriod
+        w = 2.0 * numpy.pi * self.imagePeriod
+        n_Periods = self.imageData.shape[0]
+        n_PtsPerCycle = int(numpy.floor(self.imagePeriod/dt))
+        ndt = self.imagePeriod/n_PtsPerCycle
+        # n_Periods = int(numpy.floor(maxt/self.imagePeriod)) # how many full periods in the image set?
+        # if self.nCycles > 0 and self.nCycles < n_Periods:
+        #     n_Periods = self.nCycles
+        # n_PtsPerCycle = int(numpy.floor(self.imagePeriod/dt)); # estimate image points in a stimulus cycle
+        # ndt = self.imagePeriod/n_PtsPerCycle
+        # self.imageData = self.imageData[range(0, n_Periods*n_PtsPerCycle),:,:] # reduce to only what we need
+        self.timebase = numpy.arange(0, self.imageData.shape[1]*dt, dt)# reduce data in blocks by averaging
+        maxtime = np.max(self.timebase)
+        self.imageData = self.imageData[:,self.times<=maxtime,:,:]
+        if mode == 0:
+            ipx = self.imageData.shape[2]/2
+            ipy = self.imageData.shape[3]/2
+        else:
+            ipx = 64
+            ipy = 64
+ 
+        if bins > 1:
+            redx=bins
+            redy=bins
+            nredx = int(sh[1]/redx)
+            nredy = int(sh[2]/redy)
+            newImage = numpy.zeros((self.imageData.shape[0], nredx, nredy))
+            print sh, nredx, nredy
+            print self.imageData.shape, newImage.shape
+            for i in range(0, nredx-1):
+                for j in range(0, nredy-1):
+    #                print i,j,i*redx,(i+1)*redx-1,j*redx,(j+1)*redy-1
+                    newImage[:,i,j] = numpy.mean(numpy.mean(self.imageData[:,i*redx:(i+1)*redx-1, j*redy:(j+1)*redy-1],axis=2),axis=1)
+            self.imageData = newImage
+            sh = self.imageData.shape
+            ipx = ipx/redx
+            ipy = ipy/redy
+
+        else:
+            redx = bins
+            redy = bins
+        print "# Periods: %d  Pts/cycle: %d Cycle dt %8.4fs (%8.3fHz) Cycle: %7.4fs" %(n_Periods, n_PtsPerCycle, ndt, 1.0/ndt, self.imagePeriod)
+        
+        # get the average image and the average of the whole image over time
+        #self.imageData = numpy.mean(self.imageData, axis=0)
+        sh = self.imageData.shape
+        print 'shape of imageData', sh
+        self.avgimg = numpy.mean(self.imageData, axis=1) # get mean image for reference later: average across all time
+        self.stdimg = numpy.std(self.imageData, axis= 1) # and standard deviation
+        # timeavg is calculated on the central region only:
+
+        self.timeavg = numpy.mean(numpy.mean(numpy.mean(self.imageData[:,:,int(sh[1]*0.25):int(sh[1]*0.75),int(sh[2]*0.25):int(sh[2]*0.75)], axis=3),axis=2),axis=0) # return average of entire image over time
+        # I want to define the central region in a different way.  I was to define it at the area in the middle, where the signal is 
+        # less that two standard deviations from the mean- I believe that this is where the signal lies.
+        print 'size of self.timeavg', np.shape(self.timeavg)
+        print " >>Before HPF: Noise floor (std/mean): %12.6f  largest std: %12.6f" % (numpy.mean(self.stdimg)/numpy.mean(self.avgimg), 
+               numpy.amax(self.stdimg)/numpy.mean(self.avgimg))
+
+        # color scheme: magenta with symbol is "raw" data for one pixel
+        #               black is after averaged signal over space is subtracted over time
+        #               red is after both corrections (boxcar and time acverage)
+        for czid in range(sh[0]):
+            zid[czid] = self.imageData[czid,:,ipx,ipy]-self.timeavg
+            print 'size of zid', np.shape(zid[czid])
+        mta = scipy.signal.detrend(self.timeavg)
+        mtaa = numpy.mean(mta, axis=0)
+        stdta = numpy.std(mta)
+        rjstd = 3.0*stdta
+        pts = len(self.timeavg)
+        reject = numpy.where(numpy.abs(mta) > rjstd)
+        #print 'reject', reject
+        trej = numpy.array(self.timebase[reject])
+        LPF = 0.2/dt
+        lfilt = SignalFilter_LPFBessel(scipy.signal.detrend(zid, axis=0), LPF, samplefreq=1.0/dt , NPole = 8, reduce = False)
+
+        # subtract slow fluctuations
+        flpf = float(LPF)
+        sf = float(1.0/dt)
+        wn = [flpf/(sf/2.0)]
+        NPole=8
+        filter_b,filter_a=scipy.signal.bessel(
+                NPole,
+                wn,
+                btype = 'low',
+                output = 'ba')
+        print "boxcar HPF"
+        for i in range(0, self.imageData.shape[1]):
+            for j in range(0, self.imageData.shape[2]):
+                self.imageData[:,i,j] = self.imageData[:,i,j] - self.timeavg
+# OLD: stsci not available anymore
+#               box_2D_kernel = astropy.convolve.Box2DKernel(2*n_PtsPerCycle)
+#               box_2D_kernel = Box2DKernel(5)
+                box_2D_kernel = Box1DKernel(2*n_PtsPerCycle)
+#               print self.imageData[:,i,j]
+#               print len(self.imageData[:,i,j])
+#               print box_2D_kernel
+                self.imageData[:,i,j] = self.imageData[:,i,j] - convolve_fft(self.imageData[:,i,j], box_2D_kernel) 
+#                self.imageData[:,i,j] = self.imageData[:,i,j] - scipy.stsci.convolve.boxcar(self.imageData[:,i,j], (2*n_PtsPerCycle,)) 
+                self.imageData[:,i,j]=scipy.signal.lfilter(filter_b, filter_a, scipy.signal.detrend(self.imageData[:,i,j], axis=0)) # filter the incoming signal
+        zid = self.imageData[:,ipx,ipy]
+        lfilt = SignalFilter_LPFBessel(scipy.signal.detrend(zid, axis=0), LPF, samplefreq=1.0/dt , NPole = 8, reduce = False)
+        
+        self.stdimg = numpy.std(self.imageData, axis= 0) # and standard deviation
+        print " >>after HPF: Noise floor (std/mean): %12.6f  largest std: %12.6f" % (numpy.mean(self.stdimg)/numpy.mean(self.avgimg), 
+               numpy.amax(self.stdimg)/numpy.mean(self.avgimg))
+        
+        print "now reshaping"
+        self.n_times = numpy.arange(0, n_PtsPerCycle*ndt, ndt) # just one cycle
+        #self.n_freqs = (1/ndt)*numpy.arange(0,n_PtsPerCycle*ndt,(1/))
+        # put data into new shape to prepare for mean. "Folds" data by cycles". Also multiply to make average work
+        self.imageData = numpy.reshape(self.imageData, 
+                         (n_Periods, n_PtsPerCycle, sh[1], sh[2])).astype('float32')
+
+        print "now calculating mean"
+        # excluding bad trials
+        trials = range(0, n_Periods)
+        print 'trials', trials
+        print n_PtsPerCycle
+        reject = reject[0]
+        for i in range(0,len(reject)):
+            t = reject[i]/n_PtsPerCycle
+            #if t in trials:
+                #trials.remove(t)
+        print "retaining trials: ", trials
+        D = numpy.mean(self.imageData[trials,:,:,:], axis=0).astype('float32') # /divider # get mean of the folded axes.
+        print "mean calculated, now detrend and fft"
+        # detrend before taking fft
+        D = scipy.signal.detrend(D, axis=0)
+        # calculate FFT and get amplitude and phase
+        self.DF = numpy.fft.fft(D, axis = 0)
+
+        ampimg = numpy.abs(self.DF[1,:,:]).astype('float32') #changing this to 3 instead of 1 (same next line)
+        phaseimg = numpy.angle(self.DF[1,:,:]).astype('float32')
+        if target == 1:
+            f = open('img_phase1.dat', 'w')
+            pickle.dump(phaseimg, f)
+            f.close()
+            f = open('img_amplitude1.dat', 'w')
+            pickle.dump(ampimg, f)
+            f.close()
+            self.amplitudeImage1 = ampimg
+            self.phaseImage1 = phaseimg
+            self.DF1=self.DF
+            # f = open('times1.mat', 'w')
+            # f.close()
+            # scipy.io.savemat('/Users/tessajonneropp/Desktop/data/signalAlign/times1.mat', mdict={'times1': self.n_times})
+          
+        if target == 2:
+            f = open('img_phase2.dat', 'w')
+            pickle.dump(phaseimg, f)
+            f.close()
+            f = open('img_amplitude2.dat', 'w')
+            pickle.dump(ampimg, f)
+            f.close()
+            self.amplitudeImage2 = ampimg
+            self.phaseImage2 = phaseimg
+            self.DF2=self.DF
+            # f = open('times2.mat','w')
+            # f.close()
+            # scipy.io.savemat('/Users/tessajonneropp/Desktop/data/signalAlign/times2.mat', mdict={'times2': self.n_times})
+            
+        print "fft calculated, data  saveddata"
+        # save most recent calculation to disk
+        return
+
     def Analysis_FourierMap_TFR(self, filepassed, period = 4.25, target = 1, mode=0, bins = 1, up=1):
         global D
         D = []
@@ -298,6 +490,7 @@ class testAnalysis():
 
         print "fft calculated, data  saveddata"
         # save most recent calculation to disk
+        return
 
  
     def plotmaps_pg(self, mode = 0, target = 1, gfilter = 0):
@@ -524,30 +717,6 @@ class testAnalysis():
                 for k in range(0, newsh[2]):
                     result[i, j, k] = indata[i, ji[j], ki[k]].mean()
         return result
-
-def fac_lift(goingin, times, period=4.25,):
-        period = 4.25
-        print "reshape Starting"
-
-        maxt = times[-1] # find last image time
-        print "Duration of Image Stack: %9.3f s (%8.3f min)\n" % (maxt, maxt/60.0)
-        dt = numpy.mean(numpy.diff(times)) # get the mean dt
-        sh = np.shape(goingin)
-    # #determine the number of periods in the timeseries of the data
-        period# image period in seconds.
-
-        n_Periods = int(numpy.floor(maxt/period)) # how many full periods in the image set?
-
-        n_PtsPerCycle = int(numpy.floor(period/dt)); # estimate image points in a stimulus cycle
-        ndt = period/n_PtsPerCycle
-
-        goingin = goingin[range(0, n_Periods*n_PtsPerCycle),:,:] # reduce to only what we need
-        times = numpy.arange(0,goingin.shape[0]*dt, dt)# reduce data in blocks by averaging
-
-        goingin = numpy.reshape(goingin,(n_Periods, n_PtsPerCycle, sh[1], sh[2])).astype('float32')
-        print 'shape of rescaled imagedata', goingin.shape
-        
-        return goingin
 
 
 #### This function is copied from pylibrary.Utility. It is here locally so we don't need the dependencies that pylibrary requires

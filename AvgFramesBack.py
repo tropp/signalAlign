@@ -80,9 +80,14 @@ fl = [3000*x for x in freqlist]
 print 'fl:', fl
 
 # Keys are first file #. Data are file name, number of reps, wavelength, attn, date, frequency, comment
-DB = {9: ('009', 4, 610, 15.0, '16May16', 8.0, 'thinned skull')}
-DB[7] = ('007', 4, 610, 15.0, '16May16', 16.0, 'thinned skull')
-DB[5] = ('005', 4, 610, 15.0, '16May16', 32.0, 'thinned skull')
+# DB = {9: ('009', 4, 610, 15.0, '16May16', 8.0, 'thinned skull')}
+# DB[7] = ('007', 4, 610, 15.0, '16May16', 16.0, 'thinned skull')
+# DB[5] = ('005', 4, 610, 15.0, '16May16', 32.0, 'thinned skull')
+DB = {0: ('000', 4, 610, 15.0, '16May16', 8.0, 'thinned skull')}
+DB[1] = ('001', 4, 610, 15.0, '16May16', 32.0, 'thinned skull')
+DB[2] = ('002', 4, 610, 15.0, '16May16', 32.0, 'thinned skull')
+DB[3] = ('003', 4, 610, 15.0, '16May16', 32.0, 'thinned skull')
+DB[4] = ('004', 4, 610, 15.0, '16May16', 32.0, 'thinned skull')
 #DB[1] = ('001','002', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
 #DB[9] = ('009','004', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
            
@@ -176,6 +181,9 @@ class testAnalysis():
  
         self.times = im.axisValues('Time').astype('float32')
         self.imageData = im.view(np.ndarray).astype('float32')
+        meanimg=np.mean(self.imageData, axis=0)
+        pg.image(meanimg, title='mean image')
+        #self.imageData=scipy.ndimage.gaussian_filter(self.imageData, sigma=[1,3,3], order=0,mode='reflect',truncate=4.0)
    
         return
 
