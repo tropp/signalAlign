@@ -89,24 +89,17 @@ print 'fl:', fl
 # DB[3] = ('003', 4, 610, 15.0, '16May16', 32.0, 'thinned skull')
 # DB[4] = ('004', 4, 610, 15.0, '16May16', 32.0, 'thinned skull')
 
-# Keys are file #. Data are file number, stimulus type, number of reps, wavelength, attn, date, frequency, comment
-DB = {4: ('004','SineAM_Stim_Camera',4, 610, 15.0, '3Jun16', 16.0, 'thinned skull')} 
-DB[1] = ('001','SineAM_Stim_Camera', 4, 610, 15.0, '3Jun16', 16.0, 'thinned skull')
-DB[2] = ('002','SineAM_Stim_Camera', 4, 610, 15.0, '3Jun16', 16.0, 'thinned skull')
-DB[3] = ('003','SineAM_Stim_Camera', 4, 610, 15.0, '3Jun16', 16.0, 'thinned skull') 
-DB[11] = ('011','SineAM_Stim_Camera', 4, 610, 30.0, '3Jun16', 32.0, 'thinned skull') 
-DB[12] = ('012','SineAM_Stim_Camera', 4, 610, 30.0, '3Jun16', 8.0, 'thinned skull') 
-DB[13] = ('013','SineAM_Stim_Camera', 4, 610, 30.0, '3Jun16', 4.0, 'thinned skull') 
-DB[14] = ('014','SineAM_Stim_Camera', 4, 610, 30.0, '3Jun16', 16.0, 'thinned skull') 
-DB[7] = ('007','SineAM_Stim_Camera', 4, 610, 50.0, '3Jun16', 16.0, 'thinned skull') 
-DB[8] = ('008','SineAM_Stim_Camera', 4, 610, 50.0, '3Jun16', 32.0, 'thinned skull') 
-DB[15] = ('015','SineAM_Stim_Camera', 4, 610, 50.0, '3Jun16', 16.0, 'thinned skull') 
-DB[17] = ('017','SineAM_Stim_Camera', 4, 610, 40.0, '3Jun16', 24.0, 'thinned skull') 
-DB[19] = ('019','SineAM_Stim_Camera', 4, 610, 40.0, '16May16', 24.0, 'thinned skull')
-DB[6] = ('006','SineAM_Stim_Camera', 4, 610, 40.0, '16May16', 16.0, 'thinned skull')
-# DB[5] = ('005','Noise_Stimulation_Camera', 4, 610, 15.0, '3Jun16', 32.0, 'thinned skull')  
-# DB[6] = ('006','Noise_Stimulation_Camera', 4, 610, 15.0, '3Jun16', 32.0, 'thinned skull')    
-# DB[7] = ('007','Noise_Stimulation_Camera', 4, 610, 15.0, '3Jun16', 32.0, 'thinned skull')    
+# Keys are file #. Data are file number, stimulus type, number of reps, wavelength, attn, period,date, frequency, comment
+DB = {0: (('000','001'),'Intrinsic_Stimulation_Camera',1, 610, 15.0, 2.5,'3Jun16', 48.0, 'thinned skull')} 
+# DB[1] = ('001','Intrinsic_Stimulation_Camera', 4, 610, 15.0, '3Jun16', 32.0, 'thinned skull')
+DB[2] = (('002','004'),'Intrinsic_Stimulation_Camera', 1, 610, 15.0, 2.5,'3Jun16', 3.0, 'thinned skull')
+DB[5] = (('005','006'),'Intrinsic_Stimulation_Camera', 1, 610, 40.0, 2.5,'3Jun16', 3.0, 'thinned skull') 
+DB[12]= (('012','014','016'), 'Intrinsic_Stimulation_Camera', 1, 610, 40.0, 2.5,'3Jun16', 3.0, 'thinned skull') 
+DB[7] = (('007','008'),'Intrinsic_Stimulation_Camera', 1, 610, 40.0, 2.5,'3Jun16', 48.0, 'thinned skull') 
+DB[9] = (('009','010','011'),'Intrinsic_Stimulation_Camera', 1, 610, 40.0, 2.5,'3Jun16', 3.0, 'thinned skull') 
+DB[17] = (('017'),'Intrinsic_Stimulation_Camera', 1, 610, 60.0, 2.5,'3Jun16', 3.0, 'thinned skull') 
+DB[18] = (('018','019'),'Intrinsic_Stimulation_Camera', 1, 610, 60.0, 2.5,'3Jun16', 48.0, 'thinned skull') 
+
 
 #basepath = '/Volumes/TRoppData/data/Intrinsic_data/2016.02.19_000/slice_000/SingleTone_Stimulation_'
 # basepath = '/Volumes/TRoppData/data/2016.05.16_000/SineAM_Stim_Camera_'
@@ -165,7 +158,8 @@ class testAnalysis():
                 options.upfile = DB[options.fdict][0]
                 options.stimtype = DB[options.fdict][1]
                 options.reps = DB[options.fdict][2]
-                options.freq = DB[options.fdict][6]
+                options.freq = DB[options.fdict][7]
+                options.period = DB[options.fdict][5]
             else:
                print "File %d NOT in DBase\n" % options.fdict
                return
@@ -176,33 +170,33 @@ class testAnalysis():
             basepath = '/Volumes/TROPPDATA/data/2016.06.03_000/' + options.stimtype+'_'
             print 'set up stimtype'
         # divided=np.zeros((4,100,512,512),float)
-        
-        if options.reps is not None:
-            for nn in range(options.reps):
-                self.load_file(nn)
-                if nn == 0: #check the shape of imagedata and alter divided if necessary
-                    imshape = np.shape(self.imageData)
-                    divided=np.zeros((4,imshape[0],imshape[1],imshape[2]),float)
+        numfiles = len(options.upfile)
+        for nn in range(numfiles):
+            print options.upfile[nn]
+            self.load_file(nn)
+            if nn == 0: #check the shape of imagedata and alter divided if necessary
+                imshape = np.shape(self.imageData)
+                divided=np.zeros((numfiles,imshape[0],imshape[1],imshape[2]),float)
 
-                # self.Image_Background()
-                self.Image_Divided()
-                # print 'divided', np.shape(self.divided)
-                # self.divided= self.imageData
-                divided[nn] = self.divided
+            # self.Image_Background()
+            self.Image_Divided()
+            # print 'divided', np.shape(self.divided)
+            # self.divided= self.imageData
+            divided[nn] = self.divided
 
-            self.AvgFrames=np.mean(divided, axis=0)
-            stim1=self.AvgFrames[0:19]
-            stim2=self.AvgFrames[20:39]
-            stim3=self.AvgFrames[40:59]
-            stim4=self.AvgFrames[60:79]
-            stim5=self.AvgFrames[80:99]
-            pg.image(np.max(stim1,axis=0),title='Stimulus 1')
-            pg.image(np.max(stim2,axis=0),title='Stimulus 2')
-            pg.image(np.max(stim3,axis=0),title='Stimulus 3')
-            pg.image(np.max(stim4,axis=0),title='Stimulus 4')
-            pg.image(np.max(stim5,axis=0),title='Stimulus 5')
-                
-            pg.image(np.max(self.AvgFrames,axis=0),title='Max across all stimuli')      
+        self.AvgFrames=np.mean(divided, axis=0)
+        # stim1=self.AvgFrames[0:19]
+        # stim2=self.AvgFrames[20:39]
+        # stim3=self.AvgFrames[40:59]
+        # stim4=self.AvgFrames[60:79]
+        # stim5=self.AvgFrames[80:99]
+        # pg.image(np.max(stim1,axis=0),title='Stimulus 1')
+        # pg.image(np.max(stim2,axis=0),title='Stimulus 2')
+        # pg.image(np.max(stim3,axis=0),title='Stimulus 3')
+        # pg.image(np.max(stim4,axis=0),title='Stimulus 4')
+        # pg.image(np.max(stim5,axis=0),title='Stimulus 5')
+            
+        pg.image(np.max(self.AvgFrames,axis=0),title='Max across all stimuli')      
 
                  
         return
@@ -210,7 +204,7 @@ class testAnalysis():
     def load_file(self,repnum):
         global options
         global basepath
-        upf = basepath + options.upfile + '/00' + str(repnum) + '/Camera/frames.ma'
+        upf = basepath + options.upfile[repnum] + '/Camera/frames.ma'
         im=[]
         self.imageData = []
         print "loading data from ", upf

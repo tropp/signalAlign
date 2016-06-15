@@ -74,17 +74,23 @@ print 'freq list', fl3
 # dictionary of data sets
 # Keys are first file #. Data are file name (up, down), wavelength, attn, period, date, frequency list, comment
 # 15 May 10:  used amber LED (noisy) for 610 illumination
-DB = {2: ('002', '001', 610, 15.0, 2.25, '29Apr16', fl2, 'no skull')}
+DB = {2: ('002', '000', 610, 15.0, 2.5, '3Jun16', fl3, 'thinned skull')}
 #DB[4] = ('004', '003', 610, 30.0, 2.25, '29Apr16', fl2, 'no skull')
 #DB[3] = ('003', '002', 610, 20.0, 1.25, fl2, 'no skull')
 # DB = {11: ('011', '004', 610, 20.0, 4.5, '09Feb16', fl1, 'thinned skull')}
 # DB[14] = ('014', '021', 610, 15.0, 4.25, '09Feb16', fl1, 'thinned skull') #Tessa's data
 #DB[18] = ('018', '019', 610, 15.0, 6.444, '16May16', fl1, 'thinned skull')
-DB[4] = ('004', '000', 610, 15.0, 4.5, '25May16', fl2, 'thinned skull')
-DB[6] = ('006', '010', 610, 15.0, 4.5, '25May16', fl2, 'thinned skull')
-DB[16] = ('016', '012', 610, 15.0, 4.5, '25May16', fl2, 'thinned skull')
-DB[17] = ('017', '018', 610, 15.0, 2.5, '25May16', fl3, 'thinned skull')
-DB[20] = ('020', '019', 610, 15.0, 2.5, '25May16', fl3, 'thinned skull')
+# DB[4] = ('004', '000', 610, 15.0, 4.5, '25May16', fl2, 'thinned skull')
+DB[5] = ('005', '007', 610, 40.0, 2.5, '3Jun16', fl3, 'thinned skull')
+DB[6] = ('006', '008', 610, 40.0, 2.5, '3Jun16', fl3, 'thinned skull')
+DB[16] = ('016', '009', 610, 40.0, 2.5, '3Jun16', fl3, 'thinned skull')
+DB[17] = ('017', '020', 610, 60.0, 2.5, '3Jun16', fl3, 'thinned skull')
+# DB[17] = ('017', '018', 610, 15.0, 2.5, '25May16', fl3, 'thinned skull')
+DB[12] = ('012', '010', 610, 40.0, 2.5, '3June16', fl3, 'thinned skull')
+DB[14] = ('014', '010', 610, 40.0, 2.5, '3June16', fl3, 'thinned skull')
+DB[4] = ('004', '001', 610, 15.0, 2.5, '3Jun16', fl3, 'thinned skull')
+
+
 
 
 
@@ -142,7 +148,7 @@ workingpath = 'Desktop/IntrinsicImaging/video_'
 basepath = os.path.join(homedir, workingpath)
 #basepath = '/Volumes/Promise Pegasus/ManisLab_Data3/IntrinsicImaging/'
 #basepath = '/Volumes/Time_Machine_Backups/2016.05.12_000/Sound_Stimulation_Apr_2016_'
-basepath = '/Users/tjropp/Desktop/data/2016.05.25_000/Intrinsic_Stimulation_Camera_'
+basepath = '/Volumes/TROPPDATA/data/2016.06.03_000/Intrinsic_Stimulation_Camera_'
 #basepath = '/Volumes/TRoppData/data/2016.05.16_000/Intrinsic_Stimulation_Camera_'
 
 class testAnalysis():
@@ -282,6 +288,8 @@ class testAnalysis():
             target = target + 1
             self.times = im.axisValues('Time').astype('float32')
             self.imageData = im.view(np.ndarray).astype('float32')
+            self.imageData = self.imageData[np.where(self.times>1)]
+            self.times= self.times-1
             im=[]
             if file is upf:
                upflag = 1

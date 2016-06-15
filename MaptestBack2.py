@@ -81,7 +81,7 @@ fl = [3000*x for x in freqlist]
 print 'fl:', fl
 
 # Keys are first file #. Data are file name, number of reps, wavelength, attn, date, frequency, comment
-DB = {2: ('002', '000',4, 610, 15.0, '16May16', 8.0, 'thinned skull')}
+DB = {2: ('002', '001',4, 610, 15.0, '16May16', 8.0, 'thinned skull')}
 DB[7] = ('007', '006',4, 610, 15.0, '16May16', 16.0, 'thinned skull')
 DB[4] = ('004', '005',4, 610, 15.0, '16May16', 16.0, 'thinned skull')
 DB[1] = ('001', '000',4, 610, 15.0, '19May16', 16.0, 'thinned skull')
@@ -93,7 +93,8 @@ DB[18] = ('018', '019',4, 610, 15.0, '16May16', 16.0, 'thinned skull')
 #DB[9] = ('009','004', 610, 30.0, 4.25, '05Feb16', fl, 'thinned skull')
            
 #basepath = '/Volumes/TRoppData/data/Intrinsic_data/2016.02.19_000/slice_000/SingleTone_Stimulation_'
-basepath = '/Volumes/TRoppData/data/2016.05.16_000/Intrinsic_Stimulation_Camera_'
+# basepath = '/Volumes/TRoppData/data/2016.05.16_000/Intrinsic_Stimulation_Camera_'
+#basepath = 'Users/tessajonneropp/Desktop/data/2016.06.01_001/Intrinsic_Stimulation_Camera_'
 
 class testAnalysis():
     def __init__(self):
