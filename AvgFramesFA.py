@@ -28,7 +28,7 @@ import numpy
 import numpy as np
 import scipy.signal
 import scipy.ndimage
-
+import imreg_dft
 #import acq4.util
 import pyqtgraph as pg #added to deal with plottng issues TFR 11/13/15
 #import scipy.stsci.convolve
@@ -94,12 +94,15 @@ DB = {0: ('000','FA_Stim2_Camera',20, 610, 40.0, '24Jun16', 16.0, 'thinned skull
 
 DB[1] =('001','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 5.0,'thinned skull')
 DB[3] =('003','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
-DB[4] =('004','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
+DB[4] =('004','FA_Stim2_Camera', 11, 610, 55.0, '24Jun16', 32.0,'thinned skull')
 DB[7] =('007','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
 DB[2] =('002','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 5.0,'thinned skull')
 DB[5] =('005','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
-DB[6] =('006','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
+DB[6] =('006','FA_Stim2_Camera', 10, 610, 55.0, '24Jun16', 32.0,'thinned skull')
 DB[8] =('008','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
+DB[9] =('009','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
+DB[10]=('010','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
+
 
 # DB[8] =('008','FA_Stim2_Camera', 20, 610, 55.0, '16Jun16', 5.0,'thinned skull')
 
@@ -207,7 +210,7 @@ class testAnalysis():
         print 'options.upfile', options.upfile
         if options.stimtype is not None:
             # basepath = '/Volumes/TROPPDATA/data/2016.06.24_000/' + options.stimtype+'_'
-            basepath = '/Volumes/TROPPDATA/data/2016.06.28_000/' + options.stimtype+'_'
+            basepath = '/Users/tjropp/Desktop/data/2016.06.28_000/' + options.stimtype+'_'
             
             print 'set up stimtype'
         # divided=np.zeros((4,100,512,512),float)
@@ -216,6 +219,8 @@ class testAnalysis():
             #for nn in [0,1,2,3,4,5,6,11]:
             for nn in range(options.reps):
                 self.load_file(nn)
+                self.RegisterStack()
+                self.ProcessImage()
                 #self.ProcessImage()
                 if nn == 0: #check the shape of imagedata and alter divided if necessary
                     imshape = np.shape(self.imageData)
@@ -241,11 +246,12 @@ class testAnalysis():
             # pg.image(np.max(stim4,axis=0),title='Stimulus 4')
             # pg.image(np.max(stim5,axis=0),title='Stimulus 5')
                 
-            pg.image(np.max(self.AvgFrames[59:82],axis=0),title='Max response')      
+            pg.image(np.mean(self.AvgFrames[59:82],axis=0),title='Max response')      
             pg.image(np.mean(divided, axis=0), title='divided image')
-            imagestd=np.std(divided)
-            gf = scipy.ndimage.gaussian_filter(np.mean(divided,axis=0), [0.05,.01,.01], order=0, mode='reflect')
-            pg.image(np.max(gf,axis=0),title='filtered max')
+            pg.image(np.std(divided, axis=0), title='standard deviation of the image')
+            # imagestd=np.std(divided)
+            # gf = scipy.ndimage.gaussian_filter(np.mean(divided,axis=0), [0.05,.01,.01], order=0, mode='reflect')
+            # pg.image(np.max(gf,axis=0),title='filtered max')
             # pg.image(np.mean(processed, axis=0), title='processed, not divided')  
             # backproc = np.mean(processed[:,5:,:,:],axis=1)
             # divproc = (processed-backproc)/backproc 
@@ -277,9 +283,19 @@ class testAnalysis():
         #self.ProcessImage()
         print 'imageData shape:', np.shape(self.imageData)
         #self.imageData = self.imageData[np.where(self.times>1)]
+        # back  = self.imageData[np.where(np.logical_and(self.times>2, self.times<3))]
+        # print 'size of back', np.shape(back)
+        
+        return
+
+    def ProcessImage(self):    
+        blurred1=scipy.ndimage.gaussian_filter(self.imageData[30:],[3,0,0])
+        filter_blurred1=scipy.ndimage.gaussian_filter(blurred1,1)
+        alpha=2
+        self.imageData[30:]=blurred1+alpha*(blurred1-filter_blurred1)
         back  = self.imageData[np.where(np.logical_and(self.times>2, self.times<3))]
-        print 'size of back', np.shape(back)
         self.background = np.mean(back[5:],axis=0)
+        return
         #self.times= self.times-1
 
         # interval1=self.imageData[np.where(np.logical_and(self.times>=1, self.times<=1.25))]
@@ -303,6 +319,44 @@ class testAnalysis():
    
         return
 
+    def RegisterStack(self):
+        
+        # self.imageData[0,:,:] *= 0.33
+        # self.imageData[1,:,:] *= 0.66
+        # self.imageData[-1,:,:] *= 0.33
+        # self.imageData[-2,:,:] *= 0.66
+
+        # flatten stacks
+        m = self.imageData.max(axis=0)
+        print 'shape: ', m.shape
+        nreg = self.imageData.shape[0]
+        print 'num reg:', nreg
+        ireg = 1 # int(nreg/2)  # get one near the start of the sequence.
+        print 'ireg: ', ireg
+        # correct for lateral motion
+        off = [imreg_dft.translation(self.imageData[ireg], self.imageData[i])[0] for i in range(0, self.imageData.shape[0])]
+        offt = np.array(off).T
+
+        # find boundaries of outer rectangle including all images as registered
+        minx = np.min(offt[0])
+        maxx = np.max(offt[0])
+        miny = np.min(offt[1])
+        maxy = np.max(offt[1])
+        print 'shape: ', m.shape
+        print 'min/max x: ', minx, maxx
+        print 'min/max y: ', miny, maxy
+        # build canvas
+        canvas = np.zeros(shape=(self.imageData.shape[0], self.imageData.shape[1]-minx+maxx,
+            self.imageData.shape[2]-miny+maxy), dtype=self.imageData.dtype)
+
+        # set initial image (offsets were computed relative to this, so it has no offset)
+        # canvas[0, -minx:-minx+m.shape[1], -miny:-miny+m.shape[2]] = m[0]
+        for i in range(0, self.imageData.shape[0]):
+            ox = offt[0][i] - minx
+            oy = offt[1][i] - miny
+            canvas[i, ox:(ox+self.imageData.shape[1]), oy:(oy+self.imageData.shape[2])] = self.imageData[i]
+        self.imageData = canvas
+        self.updateAvgStdImage()
     # def Image_Background(self):
     #     self.background=[]
     #     background = self.imageData[self.times<1]
@@ -310,6 +364,7 @@ class testAnalysis():
 
     #     self.background = np.mean(background,axis=0)
     #     return
+        return
 
     def Image_Divided(self):
         self.divided = (self.imageData-self.background)/self.background
@@ -318,27 +373,27 @@ class testAnalysis():
         # pg.image(self.divided,title='divided')    
         return
 
-    def ProcessImage(self):
-        dt = numpy.mean(numpy.diff(self.times)) # get the mean dt
-        LPF = 0.2/dt
-        print 'LPF', LPF
-        flpf = float(LPF)
-        sf = float(1.0/dt)
-        wn = [flpf/(sf/2.0)]
-        self.ProcessedImageData=np.zeros((85,self.imageData.shape[1],self.imageData.shape[2]),float)
-        NPole=8
-        filter_b,filter_a=scipy.signal.bessel(
-                NPole,
-                wn,
-                btype = 'low',
-                output = 'ba')
-        #stopdetrend=self.imageData.shape[0]-5
-        for i in range(0, self.imageData.shape[1]):
-            for j in range(0, self.imageData.shape[2]):
-                self.ProcessedImageData[:,i,j]=scipy.signal.lfilter(filter_b, filter_a, scipy.signal.detrend(self.imageData[35:120,i,j],axis=0)) # filter the incoming signal
-        #self.ProcessedImageData=scipy.signal.detrend(self.ProcessedImageData,axis=1)
-        # pg.image(self.ProcessedImageData, title='ProcessedImageData')
-        return
+    # def ProcessImage(self):
+    #     dt = numpy.mean(numpy.diff(self.times)) # get the mean dt
+    #     LPF = 0.2/dt
+    #     print 'LPF', LPF
+    #     flpf = float(LPF)
+    #     sf = float(1.0/dt)
+    #     wn = [flpf/(sf/2.0)]
+    #     self.ProcessedImageData=np.zeros((85,self.imageData.shape[1],self.imageData.shape[2]),float)
+    #     NPole=8
+    #     filter_b,filter_a=scipy.signal.bessel(
+    #             NPole,
+    #             wn,
+    #             btype = 'low',
+    #             output = 'ba')
+    #     #stopdetrend=self.imageData.shape[0]-5
+    #     for i in range(0, self.imageData.shape[1]):
+    #         for j in range(0, self.imageData.shape[2]):
+    #             self.ProcessedImageData[:,i,j]=scipy.signal.lfilter(filter_b, filter_a, scipy.signal.detrend(self.imageData[35:120,i,j],axis=0)) # filter the incoming signal
+    #     #self.ProcessedImageData=scipy.signal.detrend(self.ProcessedImageData,axis=1)
+    #     # pg.image(self.ProcessedImageData, title='ProcessedImageData')
+    #     return
 
     
     def Analysis_FourierMap_TFR(self, period = 4.25, target = 1, mode=0, bins = 1, up=1):
