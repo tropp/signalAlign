@@ -90,15 +90,15 @@ print 'fl:', fl
 # DB[4] = ('004', 4, 610, 15.0, '16May16', 32.0, 'thinned skull')
 
 # Keys are file #. Data are file number, stimulus type, number of reps, wavelength, attn, date, frequency, comment
-DB = {0: ('000','Noise_Stimulation_Camera',1, 610, 30.0, '14Jun16', 16.0, 'thinned skull')} 
-DB[1] = ('001','Noise_Stimulation_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull') 
-DB[2] = ('002','Noise_Stimulation_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull') 
-DB[3] = ('003','Noise_Stimulation_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull')  
+DB = {0: ('000','SineAM_Stim_Camera',1, 610, 30.0, '14Jun16', 16.0, 'thinned skull')} 
+DB[1] = ('001','SineAM_Stim_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull') 
+DB[2] = ('002','SineAM_Stim_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull') 
+DB[3] = ('003','SineAM_Stim_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull')  
 DB[5] = ('005','Noise_Stimulation_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull')  
 DB[7] = ('007','Noise_Stimulation_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull')  
 DB[8] = ('008','Noise_Stimulation_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull')  
 DB[9] = ('009','Noise_Stimulation_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull')  
-DB[10] = ('010','Noise_Stimulation_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull')  
+DB[6] = ('006','Noise_Stimulation_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull')  
 
 
 
@@ -280,7 +280,7 @@ class testAnalysis():
     def Image_Background(self):
         self.background=[]
         background = self.imageData[self.times<1]
-        pg.image(np.mean(background,axis=0), title='average background ')
+        pg.image(np.mean(background[1:],axis=0), title='average background ')
 
         self.background = np.mean(background,axis=0)
         return

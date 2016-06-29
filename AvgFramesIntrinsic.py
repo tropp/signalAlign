@@ -98,7 +98,7 @@ DB[12]= (('012','014','016'), 'Intrinsic_Stimulation_Camera', 1, 610, 40.0, 2.5,
 DB[7] = (('007','008'),'Intrinsic_Stimulation_Camera', 1, 610, 40.0, 2.5,'3Jun16', 48.0, 'thinned skull') 
 DB[9] = (('009','010','011'),'Intrinsic_Stimulation_Camera', 1, 610, 40.0, 2.5,'3Jun16', 3.0, 'thinned skull') 
 DB[17] = (('017'),'Intrinsic_Stimulation_Camera', 1, 610, 60.0, 2.5,'3Jun16', 3.0, 'thinned skull') 
-DB[18] = (('018','019'),'Intrinsic_Stimulation_Camera', 1, 610, 60.0, 2.5,'3Jun16', 48.0, 'thinned skull') 
+DB[19] = ('019','Intrinsic_Stimulation_Camera', 1, 610, 60.0, 2.5,'3Jun16', 48.0, 'thinned skull') 
 
 
 #basepath = '/Volumes/TRoppData/data/Intrinsic_data/2016.02.19_000/slice_000/SingleTone_Stimulation_'
@@ -197,14 +197,14 @@ class testAnalysis():
         # pg.image(np.max(stim5,axis=0),title='Stimulus 5')
             
         pg.image(np.max(self.AvgFrames,axis=0),title='Max across all stimuli')      
-
-                 
+        pg.image(self.divided, title='divided')
+        pg.image(self.imageData, title='raw image')        
         return
 
     def load_file(self,repnum):
         global options
         global basepath
-        upf = basepath + options.upfile[repnum] + '/Camera/frames.ma'
+        upf = basepath + options.upfile  + '/Camera/frames.ma'        
         im=[]
         self.imageData = []
         print "loading data from ", upf
@@ -218,10 +218,10 @@ class testAnalysis():
         self.times = im.axisValues('Time').astype('float32')
         self.imageData = im.view(np.ndarray).astype('float32')
         print 'imageData shape:', np.shape(self.imageData)
-        self.imageData = self.imageData[np.where(self.times>1)]
+        #self.imageData = self.imageData[np.where(self.times>1)]
         back  = self.imageData[np.where(self.times<1)]
-        self.background = np.mean(back[1:],axis=0)
-        self.times= self.times-1
+        self.background = np.mean(back[5:],axis=0)
+        #self.times= self.times-1
 
         # interval1=self.imageData[np.where(np.logical_and(self.times>=1, self.times<=1.25))]
         # print 'interval1 shape:', np.shape(interval1)

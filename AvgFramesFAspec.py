@@ -92,21 +92,17 @@ print 'fl:', fl
 # Keys are file #. Data 
 DB = {0: ('000','FA_Stim2_Camera',20, 610, 40.0, '24Jun16', 16.0, 'thinned skull')} 
 
-DB[1] =('001','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 5.0,'thinned skull')
-DB[3] =('003','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
-DB[4] =('004','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
-DB[7] =('007','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
-DB[2] =('002','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 5.0,'thinned skull')
-DB[5] =('005','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
-DB[6] =('006','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
-DB[8] =('008','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
+# DB[1] =('001','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 5.0,'thinned skull')
+# DB[3] =('003','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
+# DB[4] =('004','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
+# DB[7] =('007','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
 
 # DB[8] =('008','FA_Stim2_Camera', 20, 610, 55.0, '16Jun16', 5.0,'thinned skull')
 
 #DB = {0: ('000','SineAM_Stim_Camera',1, 610, 30.0, '14Jun16', 16.0, 'thinned skull')} 
-# DB[1] = ('001','SineAM_Stim_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull') 
-# DB[2] = ('002','SineAM_Stim_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull') 
-# DB[3] = ('003','SineAM_Stim_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull')  
+DB[1] = ('001','SineAM_Stim_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull') 
+DB[2] = ('002','SineAM_Stim_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull') 
+DB[3] = ('003','SineAM_Stim_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull')  
 
 
 
@@ -207,25 +203,26 @@ class testAnalysis():
         print 'options.upfile', options.upfile
         if options.stimtype is not None:
             # basepath = '/Volumes/TROPPDATA/data/2016.06.24_000/' + options.stimtype+'_'
-            basepath = '/Volumes/TROPPDATA/data/2016.06.28_000/' + options.stimtype+'_'
+            basepath = '/Volumes/TROPPDATA/data/2016.06.27_000/' + options.stimtype+'_'
             
             print 'set up stimtype'
         # divided=np.zeros((4,100,512,512),float)
-        
+        count=0
         if options.reps is not None:
-            #for nn in [0,1,2,3,4,5,6,11]:
-            for nn in range(options.reps):
+            for nn in [0,1,2,3,4,5,6]:
+            # for nn in range(options.reps):
                 self.load_file(nn)
                 #self.ProcessImage()
                 if nn == 0: #check the shape of imagedata and alter divided if necessary
                     imshape = np.shape(self.imageData)
-                    divided=np.zeros((options.reps,imshape[0],imshape[1],imshape[2]),float)
+                    divided=np.zeros((7,imshape[0],imshape[1],imshape[2]),float)
                     #processed=np.zeros((options.reps,85,imshape[1],imshape[2]),float)
                 # self.Image_Background()
                 self.Image_Divided()
                 # print 'divided', np.shape(self.divided)
                 # self.divided= self.imageData
-                divided[nn] = self.divided
+                divided[count] = self.divided
+                count = count+1
                 #processed[nn] = self.ProcessedImageData
             print 'shape of divided: ', np.shape(divided)
             self.AvgFrames=np.mean(divided, axis=0)
@@ -245,7 +242,7 @@ class testAnalysis():
             pg.image(np.mean(divided, axis=0), title='divided image')
             imagestd=np.std(divided)
             gf = scipy.ndimage.gaussian_filter(np.mean(divided,axis=0), [0.05,.01,.01], order=0, mode='reflect')
-            pg.image(np.max(gf,axis=0),title='filtered max')
+            pg.image(np.max(gf[59:81],axis=0),title='filtered max')
             # pg.image(np.mean(processed, axis=0), title='processed, not divided')  
             # backproc = np.mean(processed[:,5:,:,:],axis=1)
             # divproc = (processed-backproc)/backproc 
@@ -273,7 +270,7 @@ class testAnalysis():
  
         self.times = im.axisValues('Time').astype('float32')
         self.imageData = im.view(np.ndarray).astype('float32')
-        #pg.image(self.imageData, title=str(repnum))
+        pg.image(self.imageData, title=str(repnum))
         #self.ProcessImage()
         print 'imageData shape:', np.shape(self.imageData)
         #self.imageData = self.imageData[np.where(self.times>1)]
