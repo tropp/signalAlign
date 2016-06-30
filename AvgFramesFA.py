@@ -209,8 +209,8 @@ class testAnalysis():
             self.directory = options.directory
         print 'options.upfile', options.upfile
         if options.stimtype is not None:
-            # basepath = '/Volumes/TROPPDATA/data/2016.06.24_000/' + options.stimtype+'_'
-            basepath = '/Users/tjropp/Desktop/data/2016.06.28_000/' + options.stimtype+'_'
+            basepath = '/Volumes/TROPPDATA/data/2016.06.28_000/' + options.stimtype+'_'
+            # basepath = '/Users/tjropp/Desktop/data/2016.06.28_000/' + options.stimtype+'_'
             
             print 'set up stimtype'
         # divided=np.zeros((4,100,512,512),float)
@@ -246,7 +246,7 @@ class testAnalysis():
             # pg.image(np.max(stim4,axis=0),title='Stimulus 4')
             # pg.image(np.max(stim5,axis=0),title='Stimulus 5')
                 
-            pg.image(np.mean(self.AvgFrames[59:82],axis=0),title='Max response')      
+            pg.image(np.max(self.AvgFrames[59:82],axis=0),title='Max response')      
             pg.image(np.mean(divided, axis=0), title='divided image')
             pg.image(np.std(divided, axis=0), title='standard deviation of the image')
             # imagestd=np.std(divided)
@@ -289,10 +289,10 @@ class testAnalysis():
         return
 
     def ProcessImage(self):    
-        blurred1=scipy.ndimage.gaussian_filter(self.imageData[30:],[3,0,0])
-        filter_blurred1=scipy.ndimage.gaussian_filter(blurred1,1)
-        alpha=2
-        self.imageData[30:]=blurred1+alpha*(blurred1-filter_blurred1)
+        # blurred1=scipy.ndimage.gaussian_filter(self.imageData[30:],[3,0,0])
+        # filter_blurred1=scipy.ndimage.gaussian_filter(blurred1,1)
+        # alpha=2
+        # self.imageData[30:]=blurred1+alpha*(blurred1-filter_blurred1)
         back  = self.imageData[np.where(np.logical_and(self.times>2, self.times<3))]
         self.background = np.mean(back[5:],axis=0)
         return
@@ -331,10 +331,13 @@ class testAnalysis():
         print 'shape: ', m.shape
         nreg = self.imageData.shape[0]
         print 'num reg:', nreg
-        ireg = 1 # int(nreg/2)  # get one near the start of the sequence.
+        ireg = 10 # int(nreg/2)  # get one near the start of the sequence.
         print 'ireg: ', ireg
         # correct for lateral motion
-        off = [imreg_dft.translation(self.imageData[ireg], self.imageData[i])[0] for i in range(0, self.imageData.shape[0])]
+        #off = imreg_dft.translation(self.imageData[ireg], self.imageData[0])
+        # print 'off', off
+        off = [imreg_dft.translation(self.imageData[ireg], self.imageData[i])['tvec'] for i in range(0, self.imageData.shape[0])]
+        # print 'off', off
         offt = np.array(off).T
 
         # find boundaries of outer rectangle including all images as registered
@@ -357,6 +360,7 @@ class testAnalysis():
             canvas[i, ox:(ox+self.imageData.shape[1]), oy:(oy+self.imageData.shape[2])] = self.imageData[i]
         self.imageData = canvas
         self.updateAvgStdImage()
+        #pg.image(self.imageData,title='image after registration')
     # def Image_Background(self):
     #     self.background=[]
     #     background = self.imageData[self.times<1]
@@ -364,6 +368,14 @@ class testAnalysis():
 
     #     self.background = np.mean(background,axis=0)
     #     return
+        return
+    def updateAvgStdImage(self):
+        """ update the reference image types and then make sure display agrees.
+        """
+        self.aveImage = np.mean(self.imageData, axis=0)
+        self.stdImage = np.std(self.imageData, axis=0)
+        pg.image(self.aveImage, title='mean after registration')
+        pg.image(self.stdImage, title='std after registration')
         return
 
     def Image_Divided(self):
