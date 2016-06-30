@@ -90,26 +90,26 @@ print 'fl:', fl
 # DB[4] = ('004', 4, 610, 15.0, '16May16', 32.0, 'thinned skull')
 
 # Keys are file #. Data 
-DB = {0: ('000','FA_Stim2_Camera',20, 610, 40.0, '24Jun16', 16.0, 'thinned skull')} 
+# DB = {0: ('000','FA_Stim2_Camera',20, 610, 40.0, '24Jun16', 16.0, 'thinned skull')} 
 
-DB[1] =('001','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 5.0,'thinned skull')
-DB[3] =('003','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
-DB[4] =('004','FA_Stim2_Camera', 11, 610, 55.0, '24Jun16', 32.0,'thinned skull')
-DB[7] =('007','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
-DB[2] =('002','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 5.0,'thinned skull')
-DB[5] =('005','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
-DB[6] =('006','FA_Stim2_Camera', 10, 610, 55.0, '24Jun16', 32.0,'thinned skull')
-DB[8] =('008','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
-DB[9] =('009','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
-DB[10]=('010','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
+# DB[1] =('001','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 5.0,'thinned skull')
+# DB[3] =('003','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
+# DB[4] =('004','FA_Stim2_Camera', 11, 610, 55.0, '24Jun16', 32.0,'thinned skull')
+# DB[7] =('007','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
+# DB[2] =('002','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 5.0,'thinned skull')
+# DB[5] =('005','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
+# DB[6] =('006','FA_Stim2_Camera', 10, 610, 55.0, '24Jun16', 32.0,'thinned skull')
+# DB[8] =('008','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
+# DB[9] =('009','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
+# DB[10]=('010','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
 
 
 # DB[8] =('008','FA_Stim2_Camera', 20, 610, 55.0, '16Jun16', 5.0,'thinned skull')
 
-#DB = {0: ('000','SineAM_Stim_Camera',1, 610, 30.0, '14Jun16', 16.0, 'thinned skull')} 
-# DB[1] = ('001','SineAM_Stim_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull') 
-# DB[2] = ('002','SineAM_Stim_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull') 
-# DB[3] = ('003','SineAM_Stim_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull')  
+DB = {0: ('000','SineAM_Stim_Camera',1, 610, 30.0, '14Jun16', 16.0, 'thinned skull')} 
+DB[1] = ('001','SineAM_Stim_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull') 
+DB[2] = ('002','SineAM_Stim_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull') 
+DB[3] = ('003','SineAM_Stim_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull')  
 
 
 
@@ -210,16 +210,16 @@ class testAnalysis():
         print 'options.upfile', options.upfile
         if options.stimtype is not None:
             # basepath = '/Volumes/TROPPDATA/data/2016.06.28_000/' + options.stimtype+'_'
-            basepath = '/Users/tjropp/Desktop/data/2016.06.28_000/' + options.stimtype+'_'
+            basepath = '/Users/tjropp/Desktop/data/2016.06.14_000/' + options.stimtype+'_'
             
             print 'set up stimtype'
         # divided=np.zeros((4,100,512,512),float)
         
         if options.reps is not None:
-            #for nn in [0,1,2,3,4,5,6,11]:
-            for nn in range(options.reps):
+            for nn in [0]:
+            # for nn in range(options.reps):
                 self.load_file(nn)
-                self.RegisterStack()
+                #self.RegisterStack()
                 self.ProcessImage()
                 #self.ProcessImage()
                 if nn == 0: #check the shape of imagedata and alter divided if necessary
@@ -234,18 +234,29 @@ class testAnalysis():
                 #processed[nn] = self.ProcessedImageData
             print 'shape of divided: ', np.shape(divided)
             self.AvgFrames=np.mean(divided, axis=0)
+
             print 'shape of AvgFrames: ', np.shape(self.AvgFrames)
-            # stim1=self.AvgFrames[0:19]
-            # stim2=self.AvgFrames[20:39]
-            # stim3=self.AvgFrames[40:59]
-            # stim4=self.AvgFrames[60:79]
-            # stim5=self.AvgFrames[80:99]
-            # pg.image(np.max(stim1,axis=0),title='Stimulus 1')
+            stim1=np.sum(self.imageData[0:19,104:204,199:299],axis=0)
+            stim2=np.sum(self.imageData[18:37,104:204,199:299],axis=0)
+            stim3=np.sum(self.imageData[38:57,104:204,199:299],axis=0)
+            stim4=np.sum(self.imageData[58:77,104:204,199:299],axis=0)
+            stim5=np.sum(self.imageData[78:97,104:204,199:299],axis=0)
+            stim6=np.sum(self.imageData[98:117,104:204,199:299],axis=0)
+            stimuli=(stim2+stim3+stim4+stim5+stim6)/(5*stim1)-(stim1/stim1)
+            stimuli=scipy.ndimage.gaussian_filter(stimuli,1)
+            pg.image(stimuli,title='stimuli')
+            ROI1=np.where(stim1[19,:]==np.max(stim1[19,:]))
+            ROI2=np.where(np.max(stim1[47,:]))
+            print 'ROI1:',ROI1
+
             # pg.image(np.max(stim2,axis=0),title='Stimulus 2')
             # pg.image(np.max(stim3,axis=0),title='Stimulus 3')
             # pg.image(np.max(stim4,axis=0),title='Stimulus 4')
-            # pg.image(np.max(stim5,axis=0),title='Stimulus 5')
-                
+            # # pg.image(np.max(stim5,axis=0),title='Stimulus 5')
+            # datasignal=self.imageData[np.where(np.logical_and(np.std(divided, axis=0)<0.021,np.std(divided,axis=0)>0.012))]
+            # print 'size of datasignal', np.shape(datasignal)
+            # # pg.image(np.mean(datasignal,axis=0))
+
             pg.image(np.max(self.AvgFrames[59:82],axis=0),title='Max response')      
             pg.image(np.mean(divided, axis=0), title='divided image')
             pg.image(np.std(divided, axis=0), title='standard deviation of the image')
@@ -261,12 +272,12 @@ class testAnalysis():
     def load_file(self,repnum):
         global options
         global basepath
-        if repnum<10:
-            upf = basepath + options.upfile + '/00' + str(repnum) + '/Camera/frames.ma'
-        else:
-            upf = basepath + options.upfile + '/0' + str(repnum) + '/Camera/frames.ma'
+        # if repnum<10:
+        #     upf = basepath + options.upfile + '/00' + str(repnum) + '/Camera/frames.ma'
+        # else:
+        #     upf = basepath + options.upfile + '/0' + str(repnum) + '/Camera/frames.ma'
 
-        # upf = basepath + options.upfile  + '/Camera/frames.ma'
+        upf = basepath + options.upfile  + '/Camera/frames.ma'
         im=[]
         self.imageData = []
         print "loading data from ", upf
@@ -289,12 +300,13 @@ class testAnalysis():
         return
 
     def ProcessImage(self):    
-        # blurred1=scipy.ndimage.gaussian_filter(self.imageData[30:],[3,0,0])
-        # filter_blurred1=scipy.ndimage.gaussian_filter(blurred1,1)
-        # alpha=2
-        # self.imageData[30:]=blurred1+alpha*(blurred1-filter_blurred1)
-        back  = self.imageData[np.where(np.logical_and(self.times>2, self.times<3))]
-        self.background = np.mean(back[5:],axis=0)
+        blurred1=scipy.ndimage.gaussian_filter(self.imageData[5:],[3,1,1])
+        filter_blurred1=scipy.ndimage.gaussian_filter(blurred1,1)
+        alpha=1.5
+        self.imageData[5:]=blurred1+alpha*(blurred1-filter_blurred1)
+        # back  = self.imageData[np.where(np.logical_and(self.times>0.5, self.times<1))]
+        # self.background = np.mean(back,axis=0)
+        self.background = np.mean(self.imageData[5:19],axis=0)
         return
         #self.times= self.times-1
 
