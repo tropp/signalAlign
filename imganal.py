@@ -78,7 +78,7 @@ import matplotlib.pyplot as mpl
 from matplotlib import cm # color map
 import tifffile as tf
 import pyqtgraph as pg
-from PyQt4 import QtGui
+from PyQt5 import QtGui
 #from pyqtgraph.metaarray import MetaArray
 
 from optparse import OptionParser
