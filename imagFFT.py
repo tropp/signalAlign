@@ -36,7 +36,7 @@ class testAnalysis():
         self.upfile = []
         self.nrepetitions=5
         self.downfile = []
-        self.period = 1.0
+        self.period = 10.0
         self.avgimg = []
         self.imageData = []
         self.subtracted = []
@@ -53,61 +53,24 @@ class testAnalysis():
 
     def parse_commands(self, argsin=None):
         parser=OptionParser() # command line options
-        parser.add_option("-t", "--test", dest="test", action='store_true',help="Test mode to check calculations", default=False)
-        parser.add_option("-u", "--upfile", dest="upfile", metavar='FILE',help="load the up-file")
-        parser.add_option("-d", "--downfile", dest="downfile", metavar='FILE',help="load the down-file")
         parser.add_option("-D", "--directory", dest="directory", metavar='FILE',help="Use directory for data")
         parser.add_option("-T", "--tiff", dest="tifffile", default=fn, type="str",help="load a tiff file")
-        parser.add_option("-p", '--period', dest = "period", default=self.period, type="float",help = "Stimulus cycle period")
-        parser.add_option("-c", '--cycles', dest = "cycles", default=self.nrepetitions, type="int",help = "# cycles to analyze")
-        parser.add_option("-b", '--binning', dest = "binsize", default=self.binsize, type="int", help = "bin reduction x,y")
-        parser.add_option("-z", '--zbinning', dest = "zbinsize", default=self.zbinsize, type="int",help = "bin reduction z")
-        parser.add_option("-g", '--gfilter', dest = "gfilt", default=self.gfilter, type="float",help = "gaussian filter width")
-        parser.add_option("-f", '--fdict', dest = "fdict", default=0, type="int",help = "Use dictionary entry")
-        parser.add_option("-s", '--skip', dest = "skip", default=0, type="float", help = "frame skip correction")
- 
+        
         if argsin is not None:
             (options, args) = parser.parse_args(argsin)
         else:
             (options, args) = parser.parse_args()
 
-        if options.period is not None:
-            self.measuredPeriod = options.period
-        if options.cycles is not None:
-            self.nrepetitions = options.cycles
-        if options.binsize is not None:
-            self.binsize = options.binsize
-        if options.zbinsize is not None:
-            self.zbinsize = options.zbinsize
-        if options.gfilt is not None:
-            self.gfilter = options.gfilt
+    
         if options.tifffile is not None:
             self.tifffile = options.tifffile
-        if options.skip is not None:
-            self.skip = options.skip
-
-        if options.test is True:
-            self.make_test_data()
-            return
-        
-        if options.tifffile is not None:
             n2 = self.tifffile + '_MMStack_Pos0.ome.tif'
             self.read_tiff_stack(filename=os.path.join(basepath, self.tifffile, n2))
             im=self.imageData
-            self.Image_Background()
-            self.Image_Divided()
-            self.avg_over_trials()
-            pg.image(self.imageData)
+            pg.image(im,title='raw imageData')
+            pg.image(np.mean(im,axis=0), title='mean')
+            self.zBinning()
             return
-
-        if options.fdict is not None:
-            if options.fdict in DB.keys(): # populate options 
-                options.upfile = DB[options.fdict][0]
-                options.downfile = DB[options.fdict][1]
-                options.period = DB[options.fdict][4]
-            else:
-                print "File %d NOT in DBase\n" % options.fdict
-                return
 
         return
 
@@ -118,7 +81,7 @@ class testAnalysis():
         """
         print filename
         if filename is None:
-            raise ValueError('No file specitied')
+            raise ValueError('No file specified')
         print 'Reading tifffile: %s' % filename
         self.imageData = tf.imread(filename)
         self.nFrames = self.imageData.shape[0]
@@ -142,6 +105,21 @@ class testAnalysis():
         pg.image(self.divided[1:],title='divide image')
         return
 
+    def zBinning(self):
+        
+        self.imageData = self.imageData[20:,:,:]
+        sh = np.shape(self.imageData)
+        numbins = np.floor(sh[0]/4)
+        if sh[0]>numbins*4:
+            self.imageData=self.imageData[:numbins*4,:,:]
+        bins = np.zeros([4,numbins,sh[1],sh[2]],float)
+        bins = np.reshape(self.imageData,[4,numbins,sh[1],sh[2]])
+        bins = np.mean(bin,axis=0)
+        pg.image(bins, title='binned in z by 4')
+        self.imageData = bins
+        return
+
+
     def avg_over_trials(self):
 
         self.shaped = []
@@ -149,7 +127,6 @@ class testAnalysis():
         print 'single: ',single
         self.shaped = np.reshape(self.imageData,[self.nrepetitions,single,self.imageData.shape[1],self.imageData.shape[2]])
         self.imageData = np.mean(self.shaped[1:],axis=0)
-        pg.image(self.imageData, title='folded and averaged')
         return
 
 if __name__ == "__main__":

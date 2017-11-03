@@ -69,12 +69,14 @@ print 'freq list', fl2
 # dictionary of data sets
 # Keys are first file #. Data are file name (up, down), wavelength, attn, period, date, frequency list, comment
 # 15 May 10:  used amber LED (noisy) for 610 illumination
+# DB = {2: ('002', '001', 610, 15.0, 2.25, '29Apr16', fl2, 'no skull')}
+# DB[4] = ('004', '003', 610, 30.0, 2.25, '29Apr16', fl2, 'no skull')
 DB = {2: ('002', '001', 610, 15.0, 2.25, '29Apr16', fl2, 'no skull')}
 DB[4] = ('004', '003', 610, 30.0, 2.25, '29Apr16', fl2, 'no skull')
 #DB[3] = ('003', '002', 610, 20.0, 1.25, fl2, 'no skull')
 # DB = {11: ('011', '004', 610, 20.0, 4.5, '09Feb16', fl1, 'thinned skull')}
 # DB[14] = ('014', '021', 610, 15.0, 4.25, '09Feb16', fl1, 'thinned skull') #Tessa's data
-DB[18] = ('018', '019', 610, 15.0, 6.444, '16May16', fl1, 'thinned skull')
+#DB[18] = ('018', '019', 610, 15.0, 6.444, '16May16', fl1, 'thinned skull')
 # DB[22] = ('022', '023', 610, 8.0, 6.444, '15May10', fl1, 'dura, deeper focus')
 # DB[24] = ('024', '025', 610, 29.0, 6.444, '15May10', fl1, 'dura, deeper focus')
 # DB[26] = ('026', '027', 560, 29.0, 6.444, '15May10', fl1, 'dura, deeper focus') # light fluctuations; some phase shifts though
@@ -127,7 +129,8 @@ homedir = os.getenv('HOME')
 workingpath = 'Desktop/IntrinsicImaging/video_'
 basepath = os.path.join(homedir, workingpath)
 #basepath = '/Volumes/Promise Pegasus/ManisLab_Data3/IntrinsicImaging/'
-basepath = '/Volumes/Time_Machine_Backups/2016.05.12_000/Sound_Stimulation_Apr_2016_'
+# basepath = '/Volumes/Time_Machine_Backups/2016.05.12_000/Sound_Stimulation_Apr_2016_'
+basepath = '/Volumes/TROPPDATA/data/2016.08.22_000/Intrinsic_Stimulation_Camera_'
 
 class testAnalysis():
     def __init__(self):
@@ -681,7 +684,8 @@ class testAnalysis():
             #scipy.ndimage.gaussian_filter(self.phaseImage2, 2, order=0, output=self.phaseImage2, mode='reflect')
             np1 = scipy.ndimage.gaussian_filter(self.phaseImage1, gfilt, order=0, mode='reflect')
             np2 = scipy.ndimage.gaussian_filter(self.phaseImage2, gfilt, order=0, mode='reflect')
-            dphase = (np1 + np2)/2
+            dphase = (np1 - np2)/2
+            #dphase = (np1 + np2)/2
             twophi = np.angle(self.DF1[1])*np.angle(self.DF2[1])/(np.pi)
             #dphase = self.phaseImage1 - self.phaseImage2
            

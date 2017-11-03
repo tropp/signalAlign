@@ -102,50 +102,8 @@ DB[6] =('006','FA_Stim2_Camera', 10, 610, 55.0, '24Jun16', 32.0,'thinned skull')
 DB[8] =('008','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
 DB[9] =('009','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
 DB[10]=('010','FA_Stim2_Camera', 20, 610, 55.0, '24Jun16', 32.0,'thinned skull')
-
-
-# DB[8] =('008','FA_Stim2_Camera', 20, 610, 55.0, '16Jun16', 5.0,'thinned skull')
-
-#DB = {0: ('000','SineAM_Stim_Camera',1, 610, 30.0, '14Jun16', 16.0, 'thinned skull')} 
-# DB[1] = ('001','SineAM_Stim_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull') 
-# DB[2] = ('002','SineAM_Stim_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull') 
-# DB[3] = ('003','SineAM_Stim_Camera', 1, 610, 15.0, '14Jun16', 32.0, 'thinned skull')  
-
-
-
-# DB[1] = ('001','SineAM_Stim_Camera', 4, 610, 15.0, '3Jun16', 16.0, 'thinned skull')
-# DB[2] = ('002','SineAM_Stim_Camera', 4, 610, 15.0, '3Jun16', 16.0, 'thinned skull')
-# DB[3] = ('003','SineAM_Stim_Camera', 4, 610, 15.0, '3Jun16', 16.0, 'thinned skull') 
-# DB[11] = ('011','SineAM_Stim_Camera', 4, 610, 30.0, '3Jun16', 32.0, 'thinned skull') 
-# DB[12] = ('012','SineAM_Stim_Camera', 4, 610, 30.0, '3Jun16', 8.0, 'thinned skull') 
-# DB[13] = ('013','SineAM_Stim_Camera', 4, 610, 30.0, '3Jun16', 4.0, 'thinned skull') 
-# DB[14] = ('014','SineAM_Stim_Camera', 4, 610, 30.0, '3Jun16', 16.0, 'thinned skull') 
-# DB[7] = ('007','SineAM_Stim_Camera', 4, 610, 50.0, '3Jun16', 16.0, 'thinned skull') 
-# DB[8] = ('008','SineAM_Stim_Camera', 4, 610, 50.0, '3Jun16', 32.0, 'thinned skull') 
-# DB[15] = ('015','SineAM_Stim_Camera', 4, 610, 50.0, '3Jun16', 16.0, 'thinned skull') 
-# DB[17] = ('017','SineAM_Stim_Camera', 4, 610, 40.0, '3Jun16', 24.0, 'thinned skull') 
-# DB[19] = ('019','SineAM_Stim_Camera', 4, 610, 40.0, '16May16', 24.0, 'thinned skull')
-# DB[6] = ('006','SineAM_Stim_Camera', 4, 610, 40.0, '16May16', 16.0, 'thinned skull')
-# DB = {4: ('004','SineAM_Stim_Camera',4, 610, 15.0, '3Jun16', 16.0, 'thinned skull')} 
-# DB[1] = ('001','SineAM_Stim_Camera', 4, 610, 15.0, '3Jun16', 16.0, 'thinned skull')
-# DB[2] = ('002','SineAM_Stim_Camera', 4, 610, 15.0, '3Jun16', 16.0, 'thinned skull')
-# DB[3] = ('003','SineAM_Stim_Camera', 4, 610, 15.0, '3Jun16', 16.0, 'thinned skull') 
-# DB[11] = ('011','SineAM_Stim_Camera', 4, 610, 30.0, '3Jun16', 32.0, 'thinned skull') 
-# DB[12] = ('012','SineAM_Stim_Camera', 4, 610, 30.0, '3Jun16', 8.0, 'thinned skull') 
-# DB[13] = ('013','SineAM_Stim_Camera', 4, 610, 30.0, '3Jun16', 4.0, 'thinned skull') 
-# DB[14] = ('014','SineAM_Stim_Camera', 4, 610, 30.0, '3Jun16', 16.0, 'thinned skull') 
-# DB[7] = ('007','SineAM_Stim_Camera', 4, 610, 50.0, '3Jun16', 16.0, 'thinned skull') 
-# DB[8] = ('008','SineAM_Stim_Camera', 4, 610, 50.0, '3Jun16', 32.0, 'thinned skull') 
-# DB[15] = ('015','SineAM_Stim_Camera', 4, 610, 50.0, '3Jun16', 16.0, 'thinned skull') 
-# DB[17] = ('017','SineAM_Stim_Camera', 4, 610, 40.0, '3Jun16', 24.0, 'thinned skull') 
-# DB[19] = ('019','SineAM_Stim_Camera', 4, 610, 40.0, '16May16', 24.0, 'thinned skull')
-# DB[6] = ('006','SineAM_Stim_Camera', 4, 610, 40.0, '16May16', 16.0, 'thinned skull')
-# DB[5] = ('005','Noise_Stimulation_Camera', 4, 610, 15.0, '3Jun16', 32.0, 'thinned skull')  
-# DB[6] = ('006','Noise_Stimulation_Camera', 4, 610, 15.0, '3Jun16', 32.0, 'thinned skull')    
-# DB[7] = ('007','Noise_Stimulation_Camera', 4, 610, 15.0, '3Jun16', 32.0, 'thinned skull')    
-
-#basepath = '/Volumes/TRoppData/data/Intrinsic_data/2016.02.19_000/slice_000/SingleTone_Stimulation_'
-# basepath = '/Volumes/TRoppData/data/2016.05.16_000/SineAM_Stim_Camera_'
+DB[11]=('000', 'SineAM_Stim_Camera',4, 610, 30.0, '2016.08.31', 16.0, 'thinned skull')
+DB[12]=('001', 'SineAM_Stim_Camera',4, 610, 30.0, '2016.08.31', 16.0, 'thinned skull')
 
 class testAnalysis():
     def __init__(self):
@@ -202,6 +160,7 @@ class testAnalysis():
                 options.stimtype = DB[options.fdict][1]
                 options.reps = DB[options.fdict][2]
                 options.freq = DB[options.fdict][6]
+                options.datadate = DB[options.fdict][5]
             else:
                print "File %d NOT in DBase\n" % options.fdict
                return
@@ -210,7 +169,7 @@ class testAnalysis():
         print 'options.upfile', options.upfile
         if options.stimtype is not None:
             # basepath = '/Volumes/TROPPDATA/data/2016.06.28_000/' + options.stimtype+'_'
-            basepath = '/Users/tjropp/Desktop/data/2016.06.28_000/' + options.stimtype+'_'
+            basepath = '/Volumes/TROPPDATA/data/' + options.datadate+'_000/' + options.stimtype+'_'
             
             print 'set up stimtype'
         # divided=np.zeros((4,100,512,512),float)
@@ -227,28 +186,36 @@ class testAnalysis():
                     divided=np.zeros((options.reps,imshape[0],imshape[1],imshape[2]),float)
                     #processed=np.zeros((options.reps,85,imshape[1],imshape[2]),float)
                 # self.Image_Background()
-                self.Image_Divided()
+                # self.Image_Divided()
                 # print 'divided', np.shape(self.divided)
                 # self.divided= self.imageData
-                divided[nn] = self.divided
+                divided[nn] = self.imageData
+                self.imageData=[]
                 #processed[nn] = self.ProcessedImageData
+
             print 'shape of divided: ', np.shape(divided)
             self.AvgFrames=np.mean(divided, axis=0)
             print 'shape of AvgFrames: ', np.shape(self.AvgFrames)
-            # stim1=self.AvgFrames[0:19]
-            # stim2=self.AvgFrames[20:39]
-            # stim3=self.AvgFrames[40:59]
-            # stim4=self.AvgFrames[60:79]
-            # stim5=self.AvgFrames[80:99]
-            # pg.image(np.max(stim1,axis=0),title='Stimulus 1')
-            # pg.image(np.max(stim2,axis=0),title='Stimulus 2')
-            # pg.image(np.max(stim3,axis=0),title='Stimulus 3')
-            # pg.image(np.max(stim4,axis=0),title='Stimulus 4')
-            # pg.image(np.max(stim5,axis=0),title='Stimulus 5')
-                
-            pg.image(np.max(self.AvgFrames[59:82],axis=0),title='Max response')      
-            pg.image(np.mean(divided, axis=0), title='divided image')
-            pg.image(np.std(divided, axis=0), title='standard deviation of the image')
+            temp = self.AvgFrames[:,110:210,70:170]
+            # self.AvgFrames = []
+            # self.AvgFrames = temp
+            stim1=self.AvgFrames[0:19]
+            stim2=self.AvgFrames[20:39]
+            stim3=self.AvgFrames[40:59]
+            stim4=self.AvgFrames[60:79]
+            stim5=self.AvgFrames[80:99]
+            averagestim = (stim1+stim2+stim3+stim4+stim5)/5
+            pg.image(averagestim)
+            pg.image(averagestim, title='average across all stimuli')
+            pg.image(np.max(stim1,axis=0),title='Max Stimulus 1')
+            pg.image(np.max(stim2,axis=0),title='Max Stimulus 2')
+            pg.image(np.max(stim3,axis=0),title='Max Stimulus 3')
+            pg.image(np.max(stim4,axis=0),title='Max Stimulus 4')
+            pg.image(np.max(stim5,axis=0),title='Max Stimulus 5')
+            pg.image(np.sum(stim1,axis=0),title='Sum Stimulus 1')
+            # pg.image(np.max(self.AvgFrames[59:82],axis=0),title='Max response')      
+            # pg.image(np.mean(divided, axis=0), title='divided image')
+            # pg.image(np.std(divided, axis=0), title='standard deviation of the image')
             # imagestd=np.std(divided)
             # gf = scipy.ndimage.gaussian_filter(np.mean(divided,axis=0), [0.05,.01,.01], order=0, mode='reflect')
             # pg.image(np.max(gf,axis=0),title='filtered max')
@@ -293,8 +260,23 @@ class testAnalysis():
         # filter_blurred1=scipy.ndimage.gaussian_filter(blurred1,1)
         # alpha=2
         # self.imageData[30:]=blurred1+alpha*(blurred1-filter_blurred1)
-        back  = self.imageData[np.where(np.logical_and(self.times>2, self.times<3))]
-        self.background = np.mean(back[5:],axis=0)
+        # back  = self.imageData[np.where(np.logical_and(self.times>2, self.times<3))]
+        # self.background = np.mean(back[5:],axis=0)
+        back  = self.imageData[np.where(self.times<1)]
+        print 'size of back:', np.shape(back)
+        self.background = np.mean(back[4:], axis=0)
+        self.times = self.times-1
+        self.imageData = self.imageData[21:]
+        
+        # self.imageData = self.imageData[np.where(self.times>1)]
+        size = np.shape(self.imageData)
+        print 'size of image:', size
+        for jj in range(size[0]):
+            self.imageData[jj,:,:] = (self.imageData[jj,:,:] / self.background)
+        return
+        # temp=self.imageData[:,60:120,55,115]
+        # self.imageData = []
+        # self.imageData = temp
         return
         #self.times= self.times-1
 
@@ -313,8 +295,8 @@ class testAnalysis():
         # meanimg=np.mean(self.imageData, axis=0)
         # pg.image(meanimg, title='mean image')
         #self.imageData = ((interval1+interval2+interval3+interval4+interval5)/5-background)/background
-        print 'imageData shape:', np.shape(self.imageData)
-        #pg.image(background, title='background')
+        # print 'imageData shape:', np.shape(self.imageData)
+        # #pg.image(background, title='background')
         #self.imageData=scipy.ndimage.gaussian_filter(self.imageData, sigma=[1,3,3], order=0,mode='reflect',truncate=4.0)
    
         return
@@ -378,12 +360,12 @@ class testAnalysis():
         pg.image(self.stdImage, title='std after registration')
         return
 
-    def Image_Divided(self):
-        self.divided = (self.imageData-self.background)/self.background
-        #self.divided = np.mean(divided[self.times>=1],axis=0)
-        #pg.image(subtracted, title='subtracted')
-        # pg.image(self.divided,title='divided')    
-        return
+    # def Image_Divided(self):
+    #     self.divided = (self.imageData-self.background)/self.background
+    #     #self.divided = np.mean(divided[self.times>=1],axis=0)
+    #     #pg.image(subtracted, title='subtracted')
+    #     # pg.image(self.divided,title='divided')    
+    #     return
 
     # def ProcessImage(self):
     #     dt = numpy.mean(numpy.diff(self.times)) # get the mean dt
