@@ -140,7 +140,7 @@ import matplotlib.pyplot as mpl
 from matplotlib import cm # color map
 import tifffile as tf
 import pyqtgraph as pg
-from PyQt5 import QtGui
+from PyQt4 import QtGui
 from pyqtgraph.metaarray import MetaArray
 from optparse import OptionParser
 import matplotlib.colors as mplcolor
@@ -1645,7 +1645,7 @@ class FFTImageAnalysis():
 
         self.print_image_info()
 
-        smoothwin = int(self.imageData.shape[1]/8.)
+        # smoothwin = int(self.imageData.shape[1]/8.)
 
         # get the average image and the average of the whole image over time
 
@@ -1655,79 +1655,88 @@ class FFTImageAnalysis():
 
         mpl.figure(99)
 
-        mpl.imshow(avgimg, vmin=0, vmax=np.max(np.max(avgimg, axis=0), axis=0), origin='lower')
+        mpl.imshow(avgimg, vmin=0, vmax=np.max(np.max(avgimg, axis=0), axis=0))
 
-        self.meanimagevalue = np.mean(np.mean(avgimg, axis=1), axis=0)
+        # self.meanimagevalue = np.mean(np.mean(avgimg, axis=1), axis=0)
 
-        self.stdimg = np.std(self.imageData, axis= 0) # and standard deviation
+        # self.stdimg = np.std(self.imageData, axis= 0) # and standard deviation
 
-
-
+        imgdatasm = scipy.ndimage.filters.gaussian_filter(self.imageData,[1,2,2],order=0,output=None,mode='reflect',cval=0.0,truncate=4.0)
         # field correction: smooth the average image, subtract it from the imagedata, then add back the mean value
+        avgimgsm = scipy.ndimage.filters.gaussian_filter(avgimg, 2, order=0, output=None, mode='reflect', cval=0.0, truncate=4.0)
 
-        avgimgsm = scipy.ndimage.filters.gaussian_filter(avgimg, smoothwin, order=0, output=None, mode='reflect', cval=0.0, truncate=4.0)
+        # avgimgsm = scipy.ndimage.filters.gaussian_filter(avgimg, smoothwin, order=0, output=None, mode='reflect', cval=0.0, truncate=4.0)
 
         #self.imageData = (self.imageData-avgimgsm)+ self.meanimagevalue
 
-        
-
+        mpl.figure(98)
+        mpl.imshow(avgimgsm,vmin=0, vmax=np.max(np.max(avgimgsm, axis=0), axis=0))
+        mpl.figure(97)
+        mpl.imshow(np.mean(imgdatasm,axis=0))
         self.n_times = self.timebase
 
         periodsize = int(self.period*self.framerate)
+        print('periodsize: ',periodsize)
 
-        windowsize = int(self.freqperiod*self.framerate)  # window size for every response
+        # windowsize = int(self.freqperiod*self.framerate)  # window size for every response
 
-        r = range(0, self.imageData.shape[0], windowsize)
+        # r = range(0, self.imageData.shape[0], windowsize)
 
         sig = np.reshape(self.imageData, (self.nrepetitions, periodsize, 
 
                 self.imageData.shape[1], self.imageData.shape[2]), order='C')
 
-        bl = np.mean(sig[:, range(0, sig.shape[1], windowsize), :, :], axis=0)
+        repback = np.mean(np.mean(sig[:,1:41,:,:],axis=1),axis=0)
+        resp = np.mean(np.mean(sig[:,53:90,:,:],axis=1),axis=0)
 
-        bl = scipy.ndimage.filters.gaussian_filter(bl, smoothwin, order=0, output=None, mode='reflect', cval=0.0, truncate=4.0)
+        quot=(resp-repback)/repback
+        quot[quot>0]=0
+        quot=-1000*quot
+
+        mpl.figure(7)
+        mpl.imshow(quot,cmap=mpl.cm.hsv)
+        mpl.colorbar()
+        # bl = np.mean(sig[:, range(0, sig.shape[1], windowsize), :, :], axis=0)
+
+        # bl = scipy.ndimage.filters.gaussian_filter(bl, smoothwin, order=0, output=None, mode='reflect', cval=0.0, truncate=4.0)
 
 
 
-        print ('   windowsize: ', windowsize)
+        # print ('   windowsize: ', windowsize)
 
-        print ('   periodsize: ', periodsize)
-
-        
-
-        mc = matplotlib.cm
+        # print ('   periodsize: ', periodsize)
+        # mc = matplotlib.cm
 
         # only use sequential maps here
 
-        clist = [mc.Reds, mc.YlOrBr, mc.Oranges, mc.Greens, mc.GnBu, mc.Blues, mc.RdPu, mc.Purples,mc.Reds,mc.Greens,mc.Blues,mc.Reds,mc.Reds,mc.Reds,mc.Reds]
-
-        clist2 = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet', 'black','red','purple','green','blue','red','red','red','red']
+        # clist = [mc.Reds, mc.YlOrBr, mc.Oranges, mc.Greens, mc.GnBu, mc.Blues, mc.RdPu, mc.Purples,mc.Reds,mc.Greens,mc.Blues,mc.Reds,mc.Reds,mc.Reds,mc.Reds]
+        # clist2 = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet', 'black','red','purple','green','blue','red','red','red','red']
 
         cs = {}
 
-        sigd = np.zeros((bl.shape[0], sig.shape[2], sig.shape[3]))
+        # sigd = np.zeros((bl.shape[0], sig.shape[2], sig.shape[3]))
+# 
+        # localmax = {}
 
-        localmax = {}
+        # sigmax = 0.
+# 
+        # kernel = np.ones((5, 5))
 
-        sigmax = 0.
-
-        kernel = np.ones((5, 5))
-
-        psf = kernel / np.sum(kernel)
+        # psf = kernel / np.sum(kernel)
 
         # compute dF/F, and get maximum over all frequencies
 
         print ('   sig shape: ', sig.shape)
 
-        print ('   bl shape: ', bl.shape)
+        # print ('   bl shape: ', bl.shape)
 
-        smax = np.zeros(bl.shape[0])
+        # smax = np.zeros(bl.shape[0])
 
-        for i in range(bl.shape[0]):
+        # for i in range(bl.shape[0]):
 
-            sigd[i] = (np.mean(np.max(sig[:,range(i*windowsize, i*windowsize+windowsize),:,:], axis=0), axis=0) - bl[i,:,:])/bl[i,:,:]
+        #     sigd[i] = (np.mean(np.max(sig[:,range(i*windowsize, i*windowsize+windowsize),:,:], axis=0), axis=0) - bl[i,:,:])/bl[i,:,:]
 
-            sigd[i] = sigd[i]**2.0
+        #     sigd[i] = sigd[i]**2.0
 
             # smooth
 
@@ -1737,142 +1746,142 @@ class FFTImageAnalysis():
 
            # sigd[i] = restoration.richardson_lucy(sigd[i], psf, 5)
 
-            sm = sigd[i].max().max()
+#             sm = sigd[i].max().max()
 
-            if sm > sigmax:
+#             if sm > sigmax:
 
-                sigmax = sm
+#                 sigmax = sm
 
-            smax[i] = sm
+#             smax[i] = sm
 
-            print( '   i, sm: ', i, sm)
+#             print( '   i, sm: ', i, sm)
 
-        # now process for display
+#         # now process for display
 
-        print ('   sigd shape: ', sigd.shape)
+#         print ('   sigd shape: ', sigd.shape)
 
-        wdat = np.mean(sig, axis=0)
+#         wdat = np.mean(sig, axis=0)
 
-        wds = wdat.shape
+#         wds = wdat.shape
 
-        print('wdat shape: ', wds)
+#         print('wdat shape: ', wds)
 
-#        print (range(int(wds[1]/2.), int(3.*wds[1]/4.)), range(int(wds[2]/2.), int(3.*wds[2]/4.)))
+# #        print (range(int(wds[1]/2.), int(3.*wds[1]/4.)), range(int(wds[2]/2.), int(3.*wds[2]/4.)))
 
-        print( 'reduced shape: ', wdat[:,range(int(wds[1]/2.),int(3.*wds[1]/4.)),:][:,:,range(int(wds[2]/2.), int(3.*wds[2]/4.))].shape)
+#         print( 'reduced shape: ', wdat[:,range(int(wds[1]/2.),int(3.*wds[1]/4.)),:][:,:,range(int(wds[2]/2.), int(3.*wds[2]/4.))].shape)
 
-        wp = wdat[:,range(int(wds[1]/2.),int(3.*wds[1]/4.)),:][:,:,range(int(wds[2]/2.), int(3.*wds[2]/4.))]
+#         wp = wdat[:,range(int(wds[1]/2.),int(3.*wds[1]/4.)),:][:,:,range(int(wds[2]/2.), int(3.*wds[2]/4.))]
 
-        wp = np.mean(np.mean(wdat, axis=1), axis=1)
+#         wp = np.mean(np.mean(wdat, axis=1), axis=1)
 
-        mpl.figure(1)
+#         mpl.figure(1)
 
-        mpl.plot(np.linspace(0., len(wp)*1./self.framerate, num=len(wp)), wp)
+#         mpl.plot(np.linspace(0., len(wp)*1./self.framerate, num=len(wp)), wp)
 
 
 
-        mpl.figure(2)
+#         mpl.figure(2)
 
-        for i in range(sigd.shape[0]):
+#         for i in range(sigd.shape[0]):
 
-            sigd[i][sigd[i] < self.threshold*sigmax] = 0.
+#             sigd[i][sigd[i] < self.threshold*sigmax] = 0.
 
-            # find center of mass of areas above threshold
+#             # find center of mass of areas above threshold
 
-            # mass = sigd[i].copy()
+#             # mass = sigd[i].copy()
 
-            # mass[sigd[i] > 0.] = 1.
+#             # mass[sigd[i] > 0.] = 1.
 
-            # structuring_element = [[0,1,0],[1,1,1],[0,1,0]]
+#             # structuring_element = [[0,1,0],[1,1,1],[0,1,0]]
 
-            # segmentation, segments = scipy.ndimage.label(mass, structuring_element)
+#             # segmentation, segments = scipy.ndimage.label(mass, structuring_element)
 
-            # coords = scipy.ndimage.center_of_mass(sigd[i], segmentation, range(1,segments+1))
+#             # coords = scipy.ndimage.center_of_mass(sigd[i], segmentation, range(1,segments+1))
 
-            # xcoords = np.array([x[1] for x in coords])
+#             # xcoords = np.array([x[1] for x in coords])
 
-            # ycoords = np.array([x[0] for x in coords])
+#             # ycoords = np.array([x[0] for x in coords])
 
-            # cs[i] = (xcoords, ycoords)
+#             # cs[i] = (xcoords, ycoords)
 
 
 
-            # Calculating local maxima
+#             # Calculating local maxima
 
-            lm = skif.peak_local_max(sigd[i], min_distance=2, threshold_rel=0.25, exclude_border=False, 
+#             lm = skif.peak_local_max(sigd[i], min_distance=2, threshold_rel=0.25, exclude_border=False, 
 
-                indices=True, num_peaks=10, footprint=None, labels=None)
+#                 indices=True, num_peaks=10, footprint=None, labels=None)
 
-            localmax[i] = [(m[0], m[1], sigd[i][(m[0], m[1])]) for m in lm]
+#             localmax[i] = [(m[0], m[1], sigd[i][(m[0], m[1])]) for m in lm]
 
-            # print ('i, local max: ',i, localmax)
+#             # print ('i, local max: ',i, localmax)
 
-            mpl.subplot(5,5,i+1)
-            print ('shape of sigd: ',[np.shape(sigd),i])
+#             mpl.subplot(5,5,i+1)
+#             print ('shape of sigd: ',[np.shape(sigd),i])
 
-            imga1 = mpl.imshow(sigd[i], cmap=clist[i], vmin=0, origin='lower')
+#             imga1 = mpl.imshow(sigd[i], cmap=clist[i], vmin=0, origin='lower')
 
-            if len(localmax[i]) > 0:
+#             if len(localmax[i]) > 0:
 
-                max_fr = np.max([m[2] for m in localmax[i]])
+#                 max_fr = np.max([m[2] for m in localmax[i]])
 
-            else:
+#             else:
 
-                continue
+#                 continue
 
-            scattersize = 30.
+#             scattersize = 30.
 
-            for k, lm in enumerate(localmax[i]):
+#             for k, lm in enumerate(localmax[i]):
 
-                mpl.scatter(lm[1], lm[0], marker='o', c=clist2[i], edgecolors='k',
+#                 mpl.scatter(lm[1], lm[0], marker='o', c=clist2[i], edgecolors='k',
 
-                    s=scattersize*lm[2]/max_fr, linewidths=0.125, alpha=0.5)
+#                     s=scattersize*lm[2]/max_fr, linewidths=0.125, alpha=0.5)
 
-            mpl.subplot(6,5,i+15+1)
+#             mpl.subplot(6,5,i+15+1)
 
-            wr = range(i*windowsize, i*windowsize+windowsize)
+#             wr = range(i*windowsize, i*windowsize+windowsize)
 
-            # print ('   wr: len, min max: ', len(wr), min(wr), max(wr))
+#             # print ('   wr: len, min max: ', len(wr), min(wr), max(wr))
 
-            wmax = 0.
+#             wmax = 0.
 
-            for lmax in localmax[i]: # was xcoords
+#             for lmax in localmax[i]: # was xcoords
 
-                wave = wdat[wr, lmax[0],lmax[1]]
+#                 wave = wdat[wr, lmax[0],lmax[1]]
 
-                wdff = (wave-wave[0])/wave[0]
+#                 wdff = (wave-wave[0])/wave[0]
 
-                if np.max(wdff) > wmax:
+#                 if np.max(wdff) > wmax:
 
-                    wmax = np.max(wdff)
+#                     wmax = np.max(wdff)
 
-                mpl.plot(np.linspace(0., len(wave)*1./self.framerate, num=len(wave)),
+#                 mpl.plot(np.linspace(0., len(wave)*1./self.framerate, num=len(wave)),
 
-                        wdff, color=clist2[i])
+#                         wdff, color=clist2[i])
 
-            mpl.ylim(-0.1*wmax, wmax)
+#             mpl.ylim(-0.1*wmax, wmax)
 
-        fig = mpl.figure(3)
+#         fig = mpl.figure(3)
 
-        for i in range(sigd.shape[0]):
+#         for i in range(sigd.shape[0]):
 
-            if len(localmax[i]) == 0:
+#             if len(localmax[i]) == 0:
 
-                continue
+#                 continue
 
-            max_fr = np.max([m[2] for m in localmax[i]])
+#             max_fr = np.max([m[2] for m in localmax[i]])
 
-            for lm in localmax[i]:
+#             for lm in localmax[i]:
 
-                mpl.scatter(lm[1], lm[0], marker='o', c=clist2[i], 
+#                 mpl.scatter(lm[1], lm[0], marker='o', c=clist2[i], 
 
-                s=scattersize*lm[2]/max_fr, alpha=0.5, edgecolors='k')
+#                 s=scattersize*lm[2]/max_fr, alpha=0.5, edgecolors='k')
 
-        mpl.ylim(0, sigd.shape[2])
+#         mpl.ylim(0, sigd.shape[2])
 
-        mpl.xlim(0, sigd.shape[1])
+#         mpl.xlim(0, sigd.shape[1])
 
-        mpl.axis('equal')
+#         mpl.axis('equal')
 
         mpl.show()
 
