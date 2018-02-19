@@ -288,11 +288,17 @@ class FFTImageAnalysis():
         self.rebin_image()
 
     def normal_image(self):
-        background = []
-        background = np.mean(self.imageData[1:int(self.framerate-1)],axis=0)
-        self.subback = (self.imageData-background)/background
-        self.imageData = self.subback
-        pg.image(self.subback[1:],title='background subtracted')
+        dataimage=self.imageData
+        back=dataimage[1:29] 
+        back=np.mean(back,axis=0) 
+        delimage=(dataimage-back)/back 
+        pg.image((np.max(dataimage,axis=0)>4000)*delimage) 
+        self.imageData=(np.max(dataimage,axis=0)>4000)*delimage
+        # background = []
+        # background = np.mean(self.imageData[1:int(self.framerate-1)],axis=0)
+        # self.subback = (self.imageData-background)/background
+        # self.imageData = self.subback
+        # pg.image(self.subback[1:],title='background subtracted')
         # pg.image(background,title='background')
         # pg.image(self.subback,title='imageData with background subtraction')
         # pg.image(background,title='background')
@@ -366,31 +372,42 @@ class FFTImageAnalysis():
     def image_analysis(self):
         pg.image(self.imageData)
         print('nreps',self.nrepetitions)
-        imgmanip=self.imageData
+        imgmanip=self.imageData[1:]
         sh=np.shape(imgmanip)
-        stim1=np.zeros([self.nrepetitions-1,sh[1],sh[2]],float)
-        stim2=np.zeros([self.nrepetitions-1,sh[1],sh[2]],float)
-        stim3=np.zeros([self.nrepetitions-1,sh[1],sh[2]],float)
-        for i in range(self.nrepetitions):
-            tempimg1=imgmanip[44:104]
-            tempbk1=imgmanip[0:29]
-            tempimg2=imgmanip[194:255]
-            tempbk2=imgmanip[150:179]
-            tempimg3=imgmanip[344:404]
-            tempbk3=imgmanip[300:329]
-            imgmanip= imgmanip[449:]
-            if i>0:
-                divimg1=np.mean(tempimg1,axis=0)/np.mean(tempbk1,axis=0)
-                divimg2=np.mean(tempimg2,axis=0)/np.mean(tempbk2,axis=0)
-                divimg3=np.mean(tempimg3,axis=0)/np.mean(tempbk3,axis=0)
-                stim1[i-1]=divimg1
-                stim2[i-1]=divimg2
-                stim3[i-1]=divimg3
-        print('stim1 dim: ',np.shape(stim1))
-        pg.image(np.mean(stim1,axis=0),title='stim1')
-        pg.image(np.mean(stim2,axis=0),title='stim2')
-        pg.image(np.mean(stim3,axis=0),title='stim3')
-
+        mean_image=np.mean(self.imageData,axis=0)
+        pg.image(mean_image, title='mean image')
+        # stim1=np.zeros([self.nrepetitions-1,sh[1],sh[2]],float)
+        # stim2=np.zeros([self.nrepetitions-1,sh[1],sh[2]],float)
+        # stim3=np.zeros([self.nrepetitions-1,sh[1],sh[2]],float)
+        # avg_pixel=np.mean(self.imageData)
+        # print('avg pixel: ',avg_pixel)
+        # std_pixel=np.std(self.imageData)
+        # print('std pixel: ',std_pixel)
+        self.normal_image()
+        imgmanip=self.imageData[1:]
+        # for i in range(self.nrepetitions):
+        #     tempimg1=imgmanip[44:104]
+        #     tempbk1=imgmanip[0:29]
+        #     tempimg2=imgmanip[194:255]
+        #     tempbk2=imgmanip[150:179]
+        #     tempimg3=imgmanip[344:404]
+        #     tempbk3=imgmanip[300:329]
+        #     imgmanip= imgmanip[449:]
+        #     if i>0:
+        #         divimg1=np.mean(tempimg1,axis=0)
+        #         divimg2=np.mean(tempimg2,axis=0)
+        #         divimg3=np.mean(tempimg3,axis=0)
+        #        # divimg1=np.mean(tempimg1,axis=0)/np.mean(tempbk1,axis=0)
+        #         # divimg2=np.mean(tempimg2,axis=0)/np.mean(tempbk2,axis=0)
+        #         # divimg3=np.mean(tempimg3,axis=0)/np.mean(tempbk3,axis=0)
+        #         stim1[i-1]=divimg1
+        #         stim2[i-1]=divimg2
+        #         stim3[i-1]=divimg3
+        # print('stim1 dim: ',np.shape(stim1))
+        # pg.image(np.mean(stim1,axis=0),title='stim1')
+        # pg.image(np.mean(stim2,axis=0),title='stim2')
+        # pg.image(np.mean(stim3,axis=0),title='stim3')
+        pg.image(np.mean(imgmanip,axis=0),title='masked and corrected mean image')
         # # self.imageData[:,xvars[0]:xvars[1],yvars[0]:yvars[1]] = 0
         # tempimg= self.imageData[:,xvars[0]:xvars[1],yvars[0]:yvars[1]]
         # self.imageData=[]

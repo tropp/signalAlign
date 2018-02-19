@@ -39,7 +39,7 @@ import pickle
 import matplotlib
 import matplotlib.mlab as mlab
 import pylab
-from PyQt4 import QtGui
+from PyQt5 import QtGui
 from skimage import feature
 # try:
 #     import matplotlib
