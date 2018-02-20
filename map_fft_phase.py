@@ -140,7 +140,7 @@ import matplotlib.pyplot as mpl
 from matplotlib import cm # color map
 import tifffile as tf
 import pyqtgraph as pg
-from PyQt4 import QtGui
+from PyQt5 import QtGui
 from pyqtgraph.metaarray import MetaArray
 from optparse import OptionParser
 import matplotlib.colors as mplcolor
@@ -1682,28 +1682,29 @@ class FFTImageAnalysis():
 
         # r = range(0, self.imageData.shape[0], windowsize)
 
-        sig = np.reshape(self.imageData, (self.nrepetitions, periodsize, 
+        sig = np.reshape(imgdatasm, (self.nrepetitions, periodsize, 
 
                 self.imageData.shape[1], self.imageData.shape[2]), order='C')
 
         delresp=np.zeros([19,256,256])
-        repback = np.mean(sig[:,1:41,:,:],axis=1)
-        resp = np.mean(sig[:,53:90,:,:],axis=1)
+        repback = np.mean(sig[:,1:4,:,:],axis=1)
+        resp = np.mean(sig[:,5:9,:,:],axis=1)
         for counter in range(19):
             delresp[counter,:,:]=(resp[counter,:,:]-repback[counter,:,:])/repback[counter,:,:]
         quot=np.mean(delresp,axis=0)
+        quot=-quot
         print ('shape of quot: ', np.shape(quot))
         # quot=(resp-repback)/repback
         # quot[quot>0]=0
         # quot=-1000*quot
 
         mpl.figure(7)
-        mpl.imshow(quot,cmap=mpl.cm.gist_rainbow)
+        mpl.imshow(quot,cmap=mpl.cm.binary)
         mpl.colorbar()
 
-        quotsm = scipy.ndimage.filters.gaussian_filter(quot, 2, order=0, output=None, mode='reflect', cval=0.0, truncate=4.0)
+        quotsm = scipy.ndimage.filters.gaussian_filter(quot, 3, order=0, output=None, mode='reflect', cval=0.0, truncate=4.0)
         mpl.figure(8)
-        mpl.imshow(quotsm,cmap=mpl.cm.gist_rainbow)
+        mpl.imshow(quotsm,cmap=mpl.cm.binary)
         mpl.colorbar()
         
         # bl = np.mean(sig[:, range(0, sig.shape[1], windowsize), :, :], axis=0)
